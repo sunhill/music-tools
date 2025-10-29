@@ -1,0 +1,3 @@
+include LICENSE *.md
+include src/app/app_config/logging.conf
+include src/app/flask_app/templates/*

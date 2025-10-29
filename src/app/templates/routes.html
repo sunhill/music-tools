@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xml:lang="en" lang="en">
+<head>
+    <title>Routes</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script>
+        function makePlaylistForYear() {
+            const year = document.getElementById("yearInput").value;
+            window.location.href = `/playlist_creation/make_playlist_for_year?year=${year}`;
+        }
+    </script>
+    <script>
+        function makePlaylistsBetweenYears() {
+            const start_year = document.getElementById("startYearInput").value;
+            const end_year = document.getElementById("endYearInput").value;
+            window.location.href = `/playlist_creation/make_playlists_between_years?start_year=${start_year}&end_year=${end_year}`;
+        }
+    </script>
+</head>
+<body>
+<h1>List of Routes</h1>
+<ul>
+    {% for route in routes %}
+        {% if route.name != "make_playlist_for_year" and route.name != "make_playlists_between_years" %}
+            <li><a href="{{ route.path }}">{{ route.name }}</a></li>
+        {% endif %}
+    {% endfor %}
+</ul>
+<form onsubmit="makePlaylistForYear(); return false;">
+    <label for="yearInput">Year:</label>
+    <input type="number" id="yearInput" name="year" required>
+    <br>
+    <button type="submit">Make Playlist for Year</button>
+</form>
+<br>
+<form onsubmit="makePlaylistsBetweenYears(); return false;">
+    <label for="startYearInput">Start Year:</label>
+    <input type="number" id="startYearInput" name="year" required>
+    <br>
+    <label for="endYearInput">End Year:</label>
+    <input type="number" id="endYearInput" name="year" required>
+    <br>
+    <button type="submit">Make Playlists Between Years</button>
+</form>
+</body>
+</html>

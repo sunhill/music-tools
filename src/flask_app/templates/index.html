@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <title>Spotify Tasks</title>
+</head>
+<body>
+    <h1>Flask Routes</h1>
+    <ul>
+        {% for route in routes %}
+        <li><a href="{{ route.url }}">{{ route.endpoint }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

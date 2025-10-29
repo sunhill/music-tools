@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    env_file:
+      - .env
+    environment:
+      - RUNNING_IN_DOCKER=True
+      - REACT_APP_API_URL=http://localhost:8001  # API URL for frontend
+    volumes:
+      - .:/frontend:/app/frontend
+    ports:
+      - "3000:3000"
+    command: >
+      sh -c "cd /app/frontend && REACT_APP_API_URL=http://localhost:8001 npm start"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: '8g'
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      - RUNNING_IN_DOCKER=True
+    volumes:
+      - .:/src
+      - ${DATA_DIR}:/src/data
+    ports:
+      - "8001:8001"
+    command: [ "./start_api.sh" ]
+#    command: >
+#      sh -c "cd /app/backend && PYTHONPATH=/app/backend/src uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: '8g'
+
