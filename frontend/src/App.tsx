@@ -28,6 +28,7 @@ import ViewToggle from './components/ViewToggle';
 import ListView from './components/ListView';
 import {Artist, Album, Track, Playlist, SpotifyImage} from './types';
 import {ArrowUpward, ArrowDownward, GridView, List} from '@mui/icons-material';
+import {stringify} from "node:querystring";
 
 interface PaginationProps {
     total: number;
@@ -151,7 +152,7 @@ const ArtistsPage = () => {
                 const response = await fetch('http://localhost:8001/genres');
                 if (!response.ok) throw new Error('Failed to fetch genres');
                 const data = await response.json();
-                setAllGenres(data.genres.map((genre: string) => ({ value: genre, label: genre })));
+                setAllGenres(data.genres.map((genre: string) => ({value: genre, label: genre})));
             } catch (err) {
                 // Optionally handle error
                 setAllGenres([]);
@@ -198,7 +199,7 @@ const ArtistsPage = () => {
         fetchArtists();
     }, [page, pageSize, sortOrder, searchQuery, genreFilter]);
 
-    const genreOptions= allGenres;
+    const genreOptions = allGenres;
 
     const handleSort = () => {
         const newSortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
@@ -400,8 +401,6 @@ const AlbumsPage = () => {
         params.set('page', '1');
         navigate(`${location.pathname}?${params.toString()}`);
     };
-
-
 
 
     if (loading) return <CircularProgress/>;
@@ -836,6 +835,7 @@ const PlaylistsPage = () => {
 };
 
 const App = () => {
+    const playlistYears = [2025, 2024, 2023, 2022, 2021, 2020];
     return (
         <Box sx={{display: 'flex', flexDirection: 'column', minHeight: '100vh'}}>
             <Navbar/>
@@ -844,6 +844,19 @@ const App = () => {
                     Create Playlists
                 </Typography>
                 <Box sx={{display: 'flex', flexDirection: 'row', gap: 2, m: 2}}>
+                    {playlistYears.map(year => (
+                        <Button
+                            key={year}
+                            variant="contained"
+                            color="secondary"
+                            onClick={async () => {
+                                await fetch(`http://localhost:8001/make_playlist_for_year/` + JSON.stringify(year),
+                                    {method: 'POST',});
+                            }}
+                        >
+                            {year}
+                        </Button>
+                    ))}
                     <Button
                         variant="contained"
                         color="secondary"

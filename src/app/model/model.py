@@ -148,3 +148,6 @@ class Playlist(BaseModel):
     _tracks: dict
     _type: str
     _uri: str
+
+class PlaylistRequest(BaseModel):
+    year: str | None = None
