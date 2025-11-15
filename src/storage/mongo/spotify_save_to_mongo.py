@@ -312,8 +312,6 @@ def main():
 
     spotify_to_mongodb: SpotifyToMongo = SpotifyToMongo()
 
-    # all_data = unzip_data(spotify_to_mongodb.raw_data_location)
-
     spotify_to_mongodb.save_all_data({})
 
 
