@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import Paper from '@mui/material/Paper';
 import {Route, Routes, useLocation, useNavigate} from 'react-router-dom';
 import {
     Alert,
@@ -838,58 +839,49 @@ const App = () => {
     return (
         <Box sx={{display: 'flex', flexDirection: 'column', minHeight: '100vh'}}>
             <Navbar/>
-            <Box sx={{display: 'flex', justifyContent: 'flex-end', gap: 2, m: 2}}>
-
-                {/*<Button*/}
-                {/*    variant="contained"*/}
-                {/*    color="secondary"*/}
-                {/*    sx={{m: 2, alignSelf: 'flex-end'}}*/}
-                {/*    onClick={async () => {*/}
-                {/*        await fetch('http://localhost:8001/save_data_to_mongodb', {method: 'POST'});*/}
-                {/*    }}*/}
-                {/*>*/}
-                {/*    Save Data to Mongo*/}
-                {/*</Button>*/}
-                <Button
-                    variant="contained"
-                    color="secondary"
-                    sx={{m: 2, alignSelf: 'flex-end'}}
-                    onClick={async () => {
-                        await fetch('http://localhost:8001/make_playlist_2025', {method: 'POST'});
-                    }}
-                >
-                    Create 2025 Playlist
-                </Button>
-                <Button
-                    variant="contained"
-                    color="secondary"
-                    sx={{m: 2, alignSelf: 'flex-end'}}
-                    onClick={async () => {
-                        await fetch('http://localhost:8001/make_playlist_2020s', {method: 'POST'});
-                    }}
-                >
-                    Create 2020s Playlists
-                </Button>
-                <Button
-                    variant="contained"
-                    color="secondary"
-                    sx={{m: 2, alignSelf: 'flex-end'}}
-                    onClick={async () => {
-                        await fetch('http://localhost:8001/make_playlist_2010s', {method: 'POST'});
-                    }}
-                >
-                    Create 2010s Playlists
-                </Button>
-            </Box>
-            <Box component="main" sx={{flexGrow: 1, py: 4}}>
-                <Routes>
-                    <Route path="/" element={<ArtistsPage/>}/>
-                    <Route path="/artists" element={<ArtistsPage/>}/>
-                    <Route path="/albums" element={<AlbumsPage/>}/>
-                    <Route path="/tracks" element={<TracksPage/>}/>
-                    <Route path="/playlists" element={<PlaylistsPage/>}/>
-                </Routes>
-            </Box>
+            <Paper elevation={4} sx={{p: 3, minWidth: 350, bgcolor: 'background.paper'}}>
+                <Typography variant="h6" sx={{mb: 1}}>
+                    Create Playlists
+                </Typography>
+                <Box sx={{display: 'flex', flexDirection: 'row', gap: 2, m: 2}}>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={async () => {
+                            await fetch('http://localhost:8001/make_playlist_2025', {method: 'POST'});
+                        }}
+                    >
+                        2025
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={async () => {
+                            await fetch('http://localhost:8001/make_playlist_2020s', {method: 'POST'});
+                        }}
+                    >
+                        2020s
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={async () => {
+                            await fetch('http://localhost:8001/make_playlist_2010s', {method: 'POST'});
+                        }}
+                    >
+                        2010s
+                    </Button>
+                </Box>
+                <Box component="main" sx={{flexGrow: 1, py: 4}}>
+                    <Routes>
+                        <Route path="/" element={<ArtistsPage/>}/>
+                        <Route path="/artists" element={<ArtistsPage/>}/>
+                        <Route path="/albums" element={<AlbumsPage/>}/>
+                        <Route path="/tracks" element={<TracksPage/>}/>
+                        <Route path="/playlists" element={<PlaylistsPage/>}/>
+                    </Routes>
+                </Box>
+            </Paper>
         </Box>
     );
 };
