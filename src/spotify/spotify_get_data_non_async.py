@@ -188,8 +188,6 @@ class SpotifyDataGetter:
             data_location=self.raw_data_location,
         )
 
-        # TODO optimize this
-        playlists, other_playlists = [], []
         playlists, other_playlists = self.get_playlists()
         zip_data(
             playlists,
@@ -202,15 +200,12 @@ class SpotifyDataGetter:
             data_location=self.raw_data_location,
         )
 
-        # TODO optimize this
-        playlist_tracks = {}
         playlist_tracks = self.get_playlist_tracks(playlists)
         zip_data(
             playlist_tracks,
             data_type=PLAYLIST_TRACKS,
             data_location=self.raw_data_location,
         )
-        unique_playlist_tracks = {}
         unique_playlist_tracks = self.get_all_unique_tracks_in_playlists(
             playlists, playlist_tracks
         )
@@ -220,7 +215,6 @@ class SpotifyDataGetter:
             data_location=self.raw_data_location,
         )
 
-        unique_playlist_artists = {}
         unique_playlist_artists = self.get_all_unique_artists_in_playlists(
             playlists, playlist_tracks
         )
@@ -387,7 +381,7 @@ class SpotifyDataGetter:
     def dedupe_tracks(tracks) -> Generator:
         logger.debug("Deduping tracks")
         logger.debug(f"Before dedupe: {len(tracks)}")
-        unique_tracks_by_isrc: dict = dict()
+        unique_tracks_by_isrc: dict = {}
         tracks_with_no_isrc = []
         for track in tracks:
             try:
@@ -398,7 +392,7 @@ class SpotifyDataGetter:
                 tracks_with_no_isrc.append(track)
 
         deduped_tracks = sorted(
-            list(unique_tracks_by_isrc.values()),
+            unique_tracks_by_isrc.values(),
             key=lambda x: x["added_at"],
             reverse=True,
         )
@@ -410,7 +404,7 @@ class SpotifyDataGetter:
     def dedupe_albums(albums) -> Generator:
         logger.debug("Deduping albums")
         logger.debug(f"Before dedupe: {len(albums)}")
-        unique_albums_by_upc: dict = dict()
+        unique_albums_by_upc: dict = {}
         albums_with_no_upc = []
         for album in albums:
             try:
@@ -420,11 +414,10 @@ class SpotifyDataGetter:
                 logger.debug(f"Track {album} has no upc")
                 albums_with_no_upc.append(album)
 
-        deduped_albums = sorted(
-            list(unique_albums_by_upc.values()),
-            key=lambda x: x["added_at"],
-            reverse=True,
-        )
+        deduped_albums: list[Any] = sorted(unique_albums_by_upc.values(),
+                                           key=lambda x: x["added_at"],
+                                           reverse=True,
+                                           )
         deduped_albums.extend(albums_with_no_upc)
         logger.debug(f"After dedupe: {len(deduped_albums)}")
         yield from deduped_albums

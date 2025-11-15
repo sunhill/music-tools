@@ -168,7 +168,6 @@ class BaseSpotifyDataGetter:
     def check_http_status(e):
         return e.http_status == TOO_MANY_REQUESTS or e.http_status == READ_TIMEOUT
 
-
     def get_top_tracks(self) -> list:
         logger.debug("Getting top tracks")
         top_tracks = []
@@ -320,7 +319,7 @@ class BaseSpotifyDataGetter:
     def dedupe_tracks(tracks) -> Generator:
         logger.debug("Deduping tracks")
         logger.debug(f"Before dedupe: {len(tracks)}")
-        unique_tracks_by_isrc: dict = dict()
+        unique_tracks_by_isrc: dict = {}
         tracks_with_no_isrc = []
         for track in tracks:
             try:
@@ -332,7 +331,7 @@ class BaseSpotifyDataGetter:
                 tracks_with_no_isrc.append(track)
 
         deduped_tracks = sorted(
-            list(unique_tracks_by_isrc.values()),
+            unique_tracks_by_isrc.values(),
             key=lambda x: x["name"],
             reverse=True,
         )
@@ -344,7 +343,7 @@ class BaseSpotifyDataGetter:
     def dedupe_albums(albums) -> Generator:
         logger.debug("Deduping albums")
         logger.debug(f"Before dedupe: {len(albums)}")
-        unique_albums_by_upc: dict = dict()
+        unique_albums_by_upc: dict = {}
         albums_with_no_upc = []
         for album in albums:
             try:
@@ -357,7 +356,7 @@ class BaseSpotifyDataGetter:
                 albums_with_no_upc.append(album)
 
         deduped_albums = sorted(
-            list(unique_albums_by_upc.values()),
+            unique_albums_by_upc.values(),
             key=lambda x: x["name"],
             reverse=True,
         )
@@ -410,7 +409,7 @@ class BaseSpotifyDataGetter:
 
     @staticmethod
     def get_all_unique_artists_in_playlists(
-        playlists: list, playlist_tracks: dict
+            playlists: list, playlist_tracks: dict
     ) -> dict:
         logger.debug("Getting all unique artists in playlists")
         all_artists = {}
@@ -442,7 +441,7 @@ class AsyncSpotifyDataGetter(BaseSpotifyDataGetter):
     """Async version of SpotifyDataGetter with parallel processing capabilities."""
 
     async def _process_batch(
-        self, batch: List[Dict[str, Any]], process_func: callable
+            self, batch: List[Dict[str, Any]], process_func: callable
     ) -> List[Dict[str, Any]]:
         """Process a batch of items in parallel using ThreadPoolExecutor."""
         logger.debug(f"Processing batch of {len(batch)} items")
@@ -452,7 +451,6 @@ class AsyncSpotifyDataGetter(BaseSpotifyDataGetter):
                 loop.run_in_executor(executor, process_func, item) for item in batch
             ]
             return await asyncio.gather(*tasks)
-
 
     async def _wait_for_token_async(self):
         """Asynchronously wait for a token without blocking the event loop."""
@@ -468,7 +466,6 @@ class AsyncSpotifyDataGetter(BaseSpotifyDataGetter):
                 logger.error(f"Error waiting for token: {e}")
                 # Optionally, you could add a small sleep here to avoid tight looping
                 await asyncio.sleep(0.1)
-
 
     async def _make_rate_limited_request_async(self, request_func, *args, **kwargs):
         """Make a rate-limited request to Spotify API in an async context without blocking."""
@@ -580,7 +577,7 @@ class AsyncSpotifyDataGetter(BaseSpotifyDataGetter):
         logger.info(f"Starting parallel retrieval of tracks for playlist {playlist_id}")
         return await self._get_all_items_parallel(
             lambda limit, offset: self.spotify.playlist_items(
-                playlist_id, limit=limit, offset=offset,additional_types=("track")
+                playlist_id, limit=limit, offset=offset, additional_types=("track")
             ),
             lambda item: item['track'],
         )
