@@ -242,6 +242,9 @@ const ArtistsPage = () => {
                 filterOptions={genreOptions}
                 placeholder="Search artists..."
             />
+            <Typography variant="subtitle2" sx={{mb: 2}}>
+                {searchQuery ? `Search: ${searchQuery}` : ''}
+            </Typography>
             <PaginationComponent
                 total={total}
                 page={page}
@@ -436,6 +439,9 @@ const AlbumsPage = () => {
                 filterOptions={albumTypeOptions}
                 placeholder="Search albums..."
             />
+            <Typography variant="subtitle2" sx={{mb: 2}}>
+                {searchQuery ? `Search: ${searchQuery}` : ''}
+            </Typography>
             <PaginationComponent
                 total={total}
                 page={page}
@@ -566,6 +572,14 @@ const TracksPage = () => {
         navigate(`${location.pathname}?${params.toString()}`);
     };
 
+    const handleSearch = (query: string) => {
+        setSearchQuery(query);
+        const params = new URLSearchParams(location.search);
+        params.set('search', query);
+        params.set('page', '1'); // Reset to first page on search
+        navigate(`${location.pathname}?${params.toString()}`);
+    };
+
     if (loading) return <CircularProgress/>;
     if (error) return <Alert severity="error">{error}</Alert>;
 
@@ -597,9 +611,12 @@ const TracksPage = () => {
                 </Box>
             </Box>
             <SearchFilter
-                onSearch={setSearchQuery}
+                onSearch={handleSearch}
                 placeholder="Search tracks..."
             />
+            <Typography variant="subtitle2" sx={{mb: 2}}>
+                {searchQuery ? `Search: ${searchQuery}` : ''}
+            </Typography>
             <PaginationComponent
                 total={total}
                 page={page}
@@ -691,6 +708,14 @@ const PlaylistsPage = () => {
         }
     };
 
+    const handleSearch = (query: string) => {
+        setSearchQuery(query);
+        const params = new URLSearchParams(location.search);
+        params.set('search', query);
+        params.set('page', '1'); // Reset to first page on search
+        navigate(`${location.pathname}?${params.toString()}`);
+    };
+
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const pageParam = parseInt(params.get('page') || '1');
@@ -738,9 +763,12 @@ const PlaylistsPage = () => {
                 </Button>
             </Box>
             <SearchFilter
-                onSearch={setSearchQuery}
+                onSearch={handleSearch}
                 placeholder="Search playlists..."
             />
+            <Typography variant="subtitle2" sx={{mb: 2}}>
+                {searchQuery ? `Search: ${searchQuery}` : ''}
+            </Typography>
             <PaginationComponent
                 total={total}
                 page={page}
