@@ -836,6 +836,7 @@ const PlaylistsPage = () => {
 
 const App = () => {
     const playlistYears = [2025, 2024, 2023, 2022, 2021, 2020];
+    const playlistDecades = [202, 201, 200, 199, 198, 197, 196, 195];
     return (
         <Box sx={{display: 'flex', flexDirection: 'column', minHeight: '100vh'}}>
             <Navbar/>
@@ -844,6 +845,9 @@ const App = () => {
                     Create Playlists
                 </Typography>
                 <Box sx={{display: 'flex', flexDirection: 'row', gap: 2, m: 2}}>
+                    <Typography variant="h6" sx={{mb: 1}}>
+                        By Year
+                    </Typography>
                     {playlistYears.map(year => (
                         <Button
                             key={year}
@@ -857,33 +861,42 @@ const App = () => {
                             {year}
                         </Button>
                     ))}
-                    <Button
-                        variant="contained"
-                        color="secondary"
-                        onClick={async () => {
-                            await fetch('http://localhost:8001/make_playlist_2025', {method: 'POST'});
-                        }}
-                    >
-                        2025
-                    </Button>
-                    <Button
-                        variant="contained"
-                        color="secondary"
-                        onClick={async () => {
-                            await fetch('http://localhost:8001/make_playlist_2020s', {method: 'POST'});
-                        }}
-                    >
-                        2020s
-                    </Button>
-                    <Button
-                        variant="contained"
-                        color="secondary"
-                        onClick={async () => {
-                            await fetch('http://localhost:8001/make_playlist_2010s', {method: 'POST'});
-                        }}
-                    >
-                        2010s
-                    </Button>
+                </Box>
+                <Box sx={{display: 'flex', flexDirection: 'row', gap: 2, m: 2}}>
+                    <Typography variant="h6" sx={{mb: 1}}>
+                        By Decade
+                    </Typography>
+                    {playlistDecades.map(decade => (
+                        <Button
+                            key={decade}
+                            variant="contained"
+                            color="secondary"
+                            onClick={async () => {
+                                await fetch(`http://localhost:8001/make_playlist_for_decade/` + JSON.stringify(decade),
+                                    {method: 'POST',});
+                            }}
+                        >
+                            {decade}0s
+                        </Button>
+                    ))}
+                </Box>
+                <Box sx={{display: 'flex', flexDirection: 'row', gap: 2, m: 2}}>
+                    <Typography variant="h6" sx={{mb: 1}}>
+                        By Years in Decade
+                    </Typography>
+                    {playlistDecades.map(decade => (
+                        <Button
+                            key={decade}
+                            variant="contained"
+                            color="secondary"
+                            onClick={async () => {
+                                await fetch(`http://localhost:8001/make_playlist_for_decade/` + JSON.stringify(decade),
+                                    {method: 'POST',});
+                            }}
+                        >
+                            {decade}0s
+                        </Button>
+                    ))}
                 </Box>
                 <Box component="main" sx={{flexGrow: 1, py: 4}}>
                     <Routes>

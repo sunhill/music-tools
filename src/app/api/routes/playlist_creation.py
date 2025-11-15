@@ -115,6 +115,44 @@ async def make_playlist_for_year(
     }
     return JSONResponse(content=response)
 
+@router.post("/make_playlist_for_decades/{decade}", response_class=JSONResponse)
+async def make_playlist_2020s(
+    decade: int,
+    playlist_maker: Annotated[SpotifyPlaylistMaker, Depends(playlist_maker)],
+):
+    logger.debug(f"making playlist {decade}0s")
+    playlist_maker.create_playlists_by_year(
+        tracks=playlist_maker.saved_tracks,
+        start_year=decade*10,
+        end_year=decade*10 +9,
+        playlist_prefix="Liked",
+    )
+    logger.debug(f"made playlist {decade}0s")
+
+    response = {
+        "message": f"Playlist {decade}0s created",
+    }
+    return JSONResponse(content=response)
+
+@router.post("/make_playlist_for_decade/{decade}", response_class=JSONResponse)
+async def make_playlist_for_decade(
+        decade: int,
+        playlist_maker: Annotated[SpotifyPlaylistMaker, Depends(playlist_maker)],
+):
+    logger.debug(f"making playlist for decade {decade}")
+    playlist_maker.create_playlists_by_decade(
+        tracks=playlist_maker.saved_tracks,
+        start_year=decade,
+        end_year=decade,
+        playlist_prefix="Liked",
+    )
+    logger.debug("made playlist for {year")
+
+    response = {
+        "message": "Playlist created",
+    }
+    return JSONResponse(content=response)
+
 
 @router.post("/make_playlist_2025", response_class=JSONResponse)
 async def make_playlist_2025(
