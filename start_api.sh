@@ -1,4 +1,6 @@
 #!/bin/bash
+# script that starts the FastAPI backend server
+# check at http://localhost:8001/
 set -e
 SPOTIFY_CONFIG_LOCATION=$(pwd)/src/app_config/app_config.ini
 export SPOTIFY_CONFIG_LOCATION

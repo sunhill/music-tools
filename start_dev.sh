@@ -1,4 +1,5 @@
 #!/bin/bash
+# Script to start both the FastAPI backend and the React frontend
 
 # Kill any existing processes on ports 8001 and 3000
 lsof -i :8001 | awk 'NR!=1 {print $2}' | xargs kill -9 2>/dev/null
