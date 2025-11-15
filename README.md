@@ -1,4 +1,4 @@
-# Spotify Export
+# music-tools
 
 A tool to export your Spotify data to various formats.
 
