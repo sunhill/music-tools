@@ -40,6 +40,7 @@ from utils.rate_limiter.rate_limiter_interface import (
     RateLimiterConfig,
 )
 from utils.rate_limiter.redis_rate_limiter import RedisRateLimiter
+# from utils.rate_limiter.in_memory_rate_limiter import InMemoryRateLimiter
 
 logger = logging.getLogger(__name__)
 # Turn off logging for spotipy.client
@@ -116,6 +117,7 @@ class BaseSpotifyDataGetter:
             retry_after=retry_after,
         )
         self.rate_limiter = RedisRateLimiter(rate_limiter_config)
+        # self.rate_limiter = InMemoryRateLimiter(rate_limiter_config)
 
     def _init_spotify_client(
         self, spotify: Optional[Spotify], scopes: Optional[List[str]]

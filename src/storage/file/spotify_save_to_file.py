@@ -78,12 +78,6 @@ class SpotifyToFile(SpotifySave):
                 + self.individual_playlist_location
             )
 
-        # self.raw_data_location = (
-        #     self.save_location + config_parser["spotify"]["raw_data_location"]
-        # )
-        # logger.debug("Save Location: " + self.save_location)
-        # os.chdir(self.playlist_location)
-
     def save_unique_tracks_in_playlists(self, unique_tracks_in_playlists: dict):
         csv_file_name = (
             "spotify_all_tracks_in_a_playlist_" + str(datetime.date.today()) + CSV

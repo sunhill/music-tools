@@ -45,6 +45,9 @@ test = [
 
 [project.scripts]
 spotify-export = "spotify.__main__:main"
+spotify-save-to-file = "storage.file.spotify_save_to_file:main"
+spotify-save-to-mongo = "storage.mongo.spotify_save_to_mongo:main"
+spotify-save-to-postgres = "storage.postgres.spotify_save_to_postgres:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
