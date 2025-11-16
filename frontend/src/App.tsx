@@ -508,7 +508,7 @@ const TracksPage = () => {
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(12);
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
-    const [sortField, setSortField] = useState<'name' | 'duration' | null>(null);
+    const [sortField, setSortField] = useState<'name' | 'duration' | 'artists_joined' | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [view, setView] = useState<'grid' | 'list'>('grid');
     const location = useLocation();
@@ -540,7 +540,7 @@ const TracksPage = () => {
         const pageParam = parseInt(params.get('page') || '1');
         const limitParam = parseInt(params.get('limit') || '12');
         const sortParam = params.get('sort') as 'asc' | 'desc' | null;
-        const sortFieldParam = params.get('sort_field') as 'name' | 'duration' | null;
+        const sortFieldParam = params.get('sort_field') as 'name' | 'duration' | 'artists_joined' | null;
         const searchParam = params.get('search') || '';
         setPage(pageParam);
         setPageSize(limitParam);
@@ -562,7 +562,7 @@ const TracksPage = () => {
         navigate(`${location.pathname}?${params.toString()}`);
     };
 
-    const handleSortFieldChange = (field: 'name' | 'duration') => {
+    const handleSortFieldChange = (field: 'name' | 'duration' | 'artists_joined') => {
         setSortField(field);
         // Reset to first page when changing sort field
         setPage(1);
@@ -607,6 +607,13 @@ const TracksPage = () => {
                         onClick={() => handleSortFieldChange('duration')}
                     >
                         Duration
+                    </Button>
+                    <Button
+                        variant={sortField === 'artists_joined' ? 'contained' : 'outlined'}
+                        size="small"
+                        onClick={() => handleSortFieldChange('artists_joined')}
+                    >
+                        Artist
                     </Button>
                 </Box>
             </Box>

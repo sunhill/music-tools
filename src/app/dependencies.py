@@ -109,7 +109,7 @@ async def get_albums(
             album
             for album in albums
             if search in album.get('name', '').lower()
-            or any(
+               or any(
                 search in artist.get('name', '').lower()
                 for artist in album.get('artists', [])
             )
@@ -160,11 +160,11 @@ async def get_tracks(
             track
             for track in tracks
             if search in track.get('name', '').lower()
-            or any(
+               or any(
                 search in artist.get('name', '').lower()
                 for artist in track.get('artists', [])
             )
-            or search in track.get('album', {}).get('name', '').lower()
+               or search in track.get('album', {}).get('name', '').lower()
         ]
 
     # Sort if requested - apply to full dataset before pagination
@@ -173,6 +173,15 @@ async def get_tracks(
         if field == 'duration':
             tracks = sorted(
                 tracks, key=lambda x: x.get('duration_ms', 0), reverse=(sort == 'desc')
+            )
+        elif field == 'artists_joined':
+            for track in tracks:
+                track["artists_joined"] = ", ".join([artist.get("name", "") for artist in track.get("artists", [])]),
+
+            tracks = sorted(
+                tracks,
+                key=lambda x: x.get("artists_joined", ""),
+                reverse=(sort == 'desc'),
             )
         else:
             tracks = sorted(
@@ -200,7 +209,7 @@ async def get_playlists(
             playlist
             for playlist in playlists
             if search in playlist.get('name', '').lower()
-            or search in playlist.get('description', '').lower()
+               or search in playlist.get('description', '').lower()
         ]
 
     # Sort if requested
