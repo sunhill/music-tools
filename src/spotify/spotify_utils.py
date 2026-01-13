@@ -59,13 +59,10 @@ async def get_data_location():
 def get_latest_zip(dir_location: str, file_name="all_data") -> str:
     logger.debug(f"Getting latest zip file from {dir_location}")
     res = []
-    walk: Iterator[tuple[str, list[str], list[str]]] = os.walk(dir_location)
-    first_walk: tuple[str, list[str], list[str]] = next(walk)
-    sub_dirs: list[str] = first_walk[1]
-    sub_dirs = sorted(sub_dirs, reverse=True)
 
-    most_recent_dir = sub_dirs[0]
-    logger.debug(f"Most recent directory: {most_recent_dir}")
+    # Use most_recent_directory which now checks for complete data
+    most_recent_dir = most_recent_directory(dir_location)
+    logger.debug(f"Using directory: {most_recent_dir}")
 
     for path in os.listdir(os.path.join(dir_location, most_recent_dir)):
         isfile = os.path.isfile(os.path.join(dir_location, most_recent_dir, path))
@@ -92,11 +89,38 @@ def get_latest_zips(dir_location: str) -> list[str]:
 
     return res
 
+def has_complete_data(dir_path: str) -> bool:
+    """Check if a directory has all required data files."""
+    required_files = [
+        f"{SAVED_ARTISTS}.gz",
+        f"{SAVED_ALBUMS}.gz",
+        f"{SAVED_TRACKS}.gz",
+        f"{PLAYLISTS}.gz"
+    ]
+    for file_name in required_files:
+        file_path = os.path.join(dir_path, file_name)
+        if not os.path.isfile(file_path):
+            logger.debug(f"Missing required file: {file_name} in {dir_path}")
+            return False
+    logger.debug(f"Directory {dir_path} has complete data")
+    return True
+
+
 def most_recent_directory(dir_location):
     walk: Iterator[tuple[str, list[str], list[str]]] = os.walk(dir_location)
     first_walk: tuple[str, list[str], list[str]] = next(walk)
     sub_dirs: list[str] = first_walk[1]
     sub_dirs = sorted(sub_dirs, reverse=True)
+
+    # Find the most recent directory with complete data
+    for sub_dir in sub_dirs:
+        dir_path = os.path.join(dir_location, sub_dir)
+        if has_complete_data(dir_path):
+            logger.info(f"Using most recent complete data directory: {sub_dir}")
+            return sub_dir
+
+    # Fallback to most recent if no complete directory found
+    logger.warning(f"No complete data directory found, using most recent: {sub_dirs[0]}")
     most_recent_dir = sub_dirs[0]
     return most_recent_dir
 
