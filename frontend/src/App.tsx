@@ -281,6 +281,9 @@ const ArtistsPage = () => {
                                     <Typography variant="body2" color="text.secondary">
                                         {artist.followers.total.toLocaleString()} followers
                                     </Typography>
+                                    <Typography variant="caption" color="text.secondary" sx={{opacity: 0.7, display: 'block', mt: 1}}>
+                                        ID: {artist.id || 'None'}
+                                    </Typography>
                                 </CardContent>
                             </Card>
                         </Grid>
@@ -476,6 +479,9 @@ const AlbumsPage = () => {
                                     <Typography variant="body2" color="text.secondary">
                                         {album.release_date} • {album.album_type}
                                     </Typography>
+                                    <Typography variant="caption" color="text.secondary" sx={{opacity: 0.7, display: 'block', mt: 1}}>
+                                        ID: {album.id || 'None'}
+                                    </Typography>
                                 </CardContent>
                             </Card>
                         </Grid>
@@ -657,6 +663,9 @@ const TracksPage = () => {
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
                                         {track._album.name} • {formatDuration(track.duration_ms)}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary" sx={{opacity: 0.7, display: 'block', mt: 1}}>
+                                        ID: {track.id || 'None'}
                                     </Typography>
                                 </CardContent>
                             </Card>

@@ -41,7 +41,7 @@ async def list_albums(
         album_data = album_data.get("album", {}) if "album" in album_data else album_data
 
         transformed_album = {
-            "id": album_data.get("_id", ""),
+            "id": album_data.get("id", ""),
             "name": album_data.get("name", ""),
             "artists": album_data.get("artists", []),
             "images": album_data.get("images", []),

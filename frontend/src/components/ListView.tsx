@@ -31,9 +31,9 @@ const ListView: React.FC<ListViewProps> = ({
         return (
           <>
             <ListItemAvatar>
-              <Avatar 
-                alt={item.name} 
-                src={getLargestImage(item.images)} 
+              <Avatar
+                alt={item.name}
+                src={getLargestImage(item.images)}
                 variant="rounded"
                 sx={{ width: 56, height: 56 }}
               />
@@ -49,6 +49,10 @@ const ListView: React.FC<ListViewProps> = ({
                   <Typography component="span" variant="body2" color="text.secondary">
                     {item.followers.total.toLocaleString()} followers
                   </Typography>
+                  <br />
+                  <Typography component="span" variant="caption" color="text.secondary" sx={{ opacity: 0.7 }}>
+                    ID: {item.id || 'None'}
+                  </Typography>
                 </>
               }
             />
@@ -59,9 +63,9 @@ const ListView: React.FC<ListViewProps> = ({
         return (
           <>
             <ListItemAvatar>
-              <Avatar 
-                alt={item.name} 
-                src={getLargestImage(item.images)} 
+              <Avatar
+                alt={item.name}
+                src={getLargestImage(item.images)}
                 variant="rounded"
                 sx={{ width: 56, height: 56 }}
               />
@@ -77,6 +81,10 @@ const ListView: React.FC<ListViewProps> = ({
                   <Typography component="span" variant="body2" color="text.secondary">
                     {item.release_date} • {item.album_type}
                   </Typography>
+                  <br />
+                  <Typography component="span" variant="caption" color="text.secondary" sx={{ opacity: 0.7 }}>
+                    ID: {item.id || 'None'}
+                  </Typography>
                 </>
               }
             />
@@ -87,9 +95,9 @@ const ListView: React.FC<ListViewProps> = ({
         return (
           <>
             <ListItemAvatar>
-              <Avatar 
-                alt={item.name} 
-                src={getLargestImage(item._album.images)} 
+              <Avatar
+                alt={item.name}
+                src={getLargestImage(item._album.images)}
                 variant="rounded"
                 sx={{ width: 56, height: 56 }}
               />
@@ -104,6 +112,10 @@ const ListView: React.FC<ListViewProps> = ({
                   <br />
                   <Typography component="span" variant="body2" color="text.secondary">
                     {item._album.name} • {formatDuration && formatDuration(item.duration_ms)}
+                  </Typography>
+                  <br />
+                  <Typography component="span" variant="caption" color="text.secondary" sx={{ opacity: 0.7 }}>
+                    ID: {item.id || 'None'}
                   </Typography>
                 </>
               }
