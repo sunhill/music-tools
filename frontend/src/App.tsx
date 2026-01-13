@@ -810,6 +810,9 @@ const PlaylistsPage = () => {
                                     <Typography variant="body2" color="text.secondary">
                                         {playlist.tracks.total} tracks • {playlist.owner.display_name}
                                     </Typography>
+                                    <Typography variant="caption" color="text.secondary" sx={{opacity: 0.7, display: 'block', mt: 1}}>
+                                        ID: {playlist.id}
+                                    </Typography>
                                 </CardContent>
                             </Card>
                         </Grid>
