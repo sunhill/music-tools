@@ -844,9 +844,26 @@ const PlaylistsPage = () => {
 const App = () => {
     const playlistYears = [2025, 2024, 2023, 2022, 2021, 2020];
     const playlistDecades = [202, 201, 200, 199, 198, 197, 196, 195];
+    const [dataDate, setDataDate] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchDataDate = async () => {
+            try {
+                const response = await fetch('http://localhost:8001/data-date');
+                if (response.ok) {
+                    const data = await response.json();
+                    setDataDate(data.data_date);
+                }
+            } catch (err) {
+                console.error('Failed to fetch data date:', err);
+            }
+        };
+        fetchDataDate();
+    }, []);
+
     return (
         <Box sx={{display: 'flex', flexDirection: 'column', minHeight: '100vh'}}>
-            <Navbar/>
+            <Navbar dataDate={dataDate}/>
             <Paper elevation={4} sx={{p: 3, minWidth: 350, bgcolor: 'background.paper'}}>
                 <Typography variant="h6" sx={{mb: 1}}>
                     Create Playlists

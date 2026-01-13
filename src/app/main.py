@@ -11,6 +11,7 @@ from starlette.templating import Jinja2Templates
 from app.api.routes.albums import router as albums_router
 from app.api.routes.artists import router as artists_router
 from app.api.routes.genres import router as genres_router
+from app.api.routes.info import router as info_router
 from app.api.routes.playlist_creation import router as playlist_creation_router
 from app.api.routes.playlists import router as playlists_router
 from app.api.routes.tracks import router as tracks_router
@@ -34,6 +35,7 @@ app.include_router(tracks_router, tags=["tracks"])
 app.include_router(albums_router, tags=["albums"])
 app.include_router(artists_router, tags=["artists"])
 app.include_router(genres_router, tags=["genres"])
+app.include_router(info_router, tags=["info"])
 app.include_router(save_data_router, tags=["save_data"])
 app.include_router(playlist_creation_router, tags=["playlist_creation"])
 templates = Jinja2Templates(directory="src/app/templates")
