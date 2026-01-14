@@ -436,7 +436,9 @@ class BaseSpotifyDataGetter:
     def get_library_saved_album_tracks(albums: List) -> Generator:
         logger.debug("Getting library saved album tracks")
         for album in albums:
-            yield from album["tracks"]["items"]
+            for track in album["tracks"]["items"]:
+                track["album_id"] = album["id"]
+                yield track
 
 
 class AsyncSpotifyDataGetter(BaseSpotifyDataGetter):
@@ -654,12 +656,12 @@ class AsyncSpotifyDataGetter(BaseSpotifyDataGetter):
         )
         logger.info(f"Saved {len(albums)} albums")
 
-        # album_tracks = list(self.get_library_saved_album_tracks(albums))
-        # zip_data(
-        #     album_tracks,
-        #     data_type=SAVED_ALBUM_TRACKS,
-        #     data_location=self.raw_data_location,
-        # )
+        album_tracks = list(self.get_library_saved_album_tracks(albums))
+        zip_data(
+            album_tracks,
+            data_type=SAVED_ALBUM_TRACKS,
+            data_location=self.raw_data_location,
+        )
 
         # Get saved artists
         logger.info("Retrieving saved artists")
