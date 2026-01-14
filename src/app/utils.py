@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from spotify.spotify_utils import get_memory_usage, get_data_location, unzip_data_from_zip, get_latest_zip, \
-    SAVED_ALBUMS, SAVED_ARTISTS, SAVED_TRACKS, PLAYLISTS
+    SAVED_ALBUMS, SAVED_ARTISTS, SAVED_TRACKS, PLAYLISTS, most_recent_directory
 
 logging.basicConfig(
     level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -32,6 +32,11 @@ async def load_data(app: FastAPI):
     try:
         get_memory_usage()
         raw_data_location = await get_data_location()
+
+        # Store the data directory date
+        app.data_date = most_recent_directory(raw_data_location)
+        logger.info(f"Using data from date: {app.data_date}")
+
         app.album_tracks = {}
         # app.album_tracks = unzip_data_from_zip(
         #     get_latest_zip(raw_data_location, SAVED_ALBUM_TRACKS)

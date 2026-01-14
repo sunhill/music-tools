@@ -281,6 +281,9 @@ const ArtistsPage = () => {
                                     <Typography variant="body2" color="text.secondary">
                                         {artist.followers.total.toLocaleString()} followers
                                     </Typography>
+                                    <Typography variant="caption" color="text.secondary" sx={{opacity: 0.7, display: 'block', mt: 1}}>
+                                        ID: {artist.id || 'None'}
+                                    </Typography>
                                 </CardContent>
                             </Card>
                         </Grid>
@@ -476,6 +479,9 @@ const AlbumsPage = () => {
                                     <Typography variant="body2" color="text.secondary">
                                         {album.release_date} • {album.album_type}
                                     </Typography>
+                                    <Typography variant="caption" color="text.secondary" sx={{opacity: 0.7, display: 'block', mt: 1}}>
+                                        ID: {album.id || 'None'}
+                                    </Typography>
                                 </CardContent>
                             </Card>
                         </Grid>
@@ -658,6 +664,9 @@ const TracksPage = () => {
                                     <Typography variant="body2" color="text.secondary">
                                         {track._album.name} • {formatDuration(track.duration_ms)}
                                     </Typography>
+                                    <Typography variant="caption" color="text.secondary" sx={{opacity: 0.7, display: 'block', mt: 1}}>
+                                        ID: {track.id || 'None'}
+                                    </Typography>
                                 </CardContent>
                             </Card>
                         </Grid>
@@ -810,6 +819,9 @@ const PlaylistsPage = () => {
                                     <Typography variant="body2" color="text.secondary">
                                         {playlist.tracks.total} tracks • {playlist.owner.display_name}
                                     </Typography>
+                                    <Typography variant="caption" color="text.secondary" sx={{opacity: 0.7, display: 'block', mt: 1}}>
+                                        ID: {playlist.id}
+                                    </Typography>
                                 </CardContent>
                             </Card>
                         </Grid>
@@ -844,9 +856,26 @@ const PlaylistsPage = () => {
 const App = () => {
     const playlistYears = [2025, 2024, 2023, 2022, 2021, 2020];
     const playlistDecades = [202, 201, 200, 199, 198, 197, 196, 195];
+    const [dataDate, setDataDate] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchDataDate = async () => {
+            try {
+                const response = await fetch('http://localhost:8001/data-date');
+                if (response.ok) {
+                    const data = await response.json();
+                    setDataDate(data.data_date);
+                }
+            } catch (err) {
+                console.error('Failed to fetch data date:', err);
+            }
+        };
+        fetchDataDate();
+    }, []);
+
     return (
         <Box sx={{display: 'flex', flexDirection: 'column', minHeight: '100vh'}}>
-            <Navbar/>
+            <Navbar dataDate={dataDate}/>
             <Paper elevation={4} sx={{p: 3, minWidth: 350, bgcolor: 'background.paper'}}>
                 <Typography variant="h6" sx={{mb: 1}}>
                     Create Playlists
