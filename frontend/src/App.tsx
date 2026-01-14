@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import Paper from '@mui/material/Paper';
-import {Route, Routes, useLocation, useNavigate, Link as RouterLink} from 'react-router-dom';
+import {Route, Routes, useLocation, useNavigate, Link as RouterLink, useParams} from 'react-router-dom';
 import {
     Alert,
     Box,
@@ -19,6 +19,12 @@ import {
     Tooltip,
     Typography,
     Button,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
     Tabs,
     Tab
 } from '@mui/material';
@@ -464,7 +470,7 @@ const AlbumsPage = () => {
                 <Grid container spacing={3}>
                     {albums.map((album) => (
                         <Grid item xs={12} sm={6} md={4} key={album.id}>
-                            <Card sx={{height: '100%', display: 'flex', flexDirection: 'column'}}>
+                            <Card component={RouterLink} to={`/albums/${album.id}`} sx={{height: '100%', display: 'flex', flexDirection: 'column', textDecoration: 'none'}}>
                                 <CardMedia
                                     component="img"
                                     height="200"
@@ -472,14 +478,14 @@ const AlbumsPage = () => {
                                     alt={album.name}
                                 />
                                 <CardContent sx={{flexGrow: 1}}>
-                                    <Typography gutterBottom variant="h5" component="h2">
+                                    <Typography gutterBottom variant="h5" component="h2" color="text.primary">
                                         {album.name}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
                                         {album.artists_joined}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        {album.release_date} • {album.album_type}
+                                        {album.release_date.substring(0, 4)} • {album.album_type}
                                     </Typography>
                                     <Typography variant="caption" color="text.secondary" sx={{opacity: 0.7, display: 'block', mt: 1}}>
                                         ID: {album.id || 'None'}
@@ -653,7 +659,7 @@ const TracksPage = () => {
                                 <CardMedia
                                     component="img"
                                     height="200"
-                                    image={getLargestImage(track._album.images)}
+                                    image={getLargestImage(track.album?.images ||track.images||[] )}
                                     alt={track.name}
                                 />
                                 <CardContent sx={{flexGrow: 1}}>
@@ -664,7 +670,7 @@ const TracksPage = () => {
                                         {track.artists_joined}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        {track._album.name} • {formatDuration(track.duration_ms)}
+                                        {track.album?.name} • {formatDuration(track.duration_ms)}
                                     </Typography>
                                     <Typography variant="caption" color="text.secondary" sx={{opacity: 0.7, display: 'block', mt: 1}}>
                                         ID: {track.id || 'None'}
@@ -855,6 +861,95 @@ const PlaylistsPage = () => {
     );
 };
 
+const AlbumDetailPage = () => {
+    const { albumId } = useParams<{ albumId: string }>();
+    const [album, setAlbum] = useState<Album | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchAlbum = async () => {
+            if (!albumId) return;
+            try {
+                setLoading(true);
+                // NOTE: This assumes a backend endpoint exists at /albums/{id}
+                // You may need to create this in your FastAPI backend.
+                const response = await fetch(`http://localhost:8001/albums/${albumId}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch album details');
+                }
+                const data = await response.json();
+                setAlbum(data);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'Failed to fetch album details');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAlbum();
+    }, [albumId]);
+
+    if (loading) return <CircularProgress />;
+    if (error) return <Alert severity="error">{error}</Alert>;
+    if (!album) return <Alert severity="info">Album not found.</Alert>;
+
+    const sortedTracks = album.tracks ? [...album.tracks].sort((a, b) => {
+        if (a.disc_number !== b.disc_number) {
+            return a.disc_number - b.disc_number;
+        }
+        return a.track_number - b.track_number;
+    }) : [];
+
+    return (
+        <Container>
+            <Box sx={{ display: 'flex', mb: 4, gap: 3, alignItems: 'flex-end' }}>
+                <CardMedia
+                    component="img"
+                    sx={{ width: 250, height: 250, borderRadius: 1, boxShadow: 3 }}
+                    image={getLargestImage(album.images)}
+                    alt={album.name}
+                />
+                <Box>
+                    <Typography variant="overline">
+                        {album.album_type.toUpperCase()}
+                    </Typography>
+                    <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold' }}>
+                        {album.name}
+                    </Typography>
+                    <Typography variant="h6" color="text.secondary">
+                        {album.artists_joined}
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary">
+                        {album.release_date.substring(0, 4)} • {album.total_tracks} tracks
+                    </Typography>
+                </Box>
+            </Box>
+
+            <TableContainer component={Paper}>
+                <Table aria-label="album tracks table">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell align="right" sx={{ width: '5%' }}>#</TableCell>
+                            <TableCell>Title</TableCell>
+                            <TableCell align="right">Duration</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {sortedTracks.map((track) => (
+                            <TableRow key={track.id} hover>
+                                <TableCell align="right">{track.track_number}</TableCell>
+                                <TableCell>{track.name}</TableCell>
+                                <TableCell align="right">{formatDuration(track.duration_ms)}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        </Container>
+    );
+};
+
 interface TabPanelProps {
     children?: React.ReactNode;
     index: number;
@@ -951,6 +1046,7 @@ const App = () => {
                         <Route path="/" element={<ArtistsPage/>}/>
                         <Route path="/artists" element={<ArtistsPage/>}/>
                         <Route path="/albums" element={<AlbumsPage/>}/>
+                        <Route path="/albums/:albumId" element={<AlbumDetailPage />} />
                         <Route path="/tracks" element={<TracksPage/>}/>
                         <Route path="/playlists" element={<PlaylistsPage/>}/>
                     </Routes>

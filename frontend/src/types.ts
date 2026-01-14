@@ -25,13 +25,14 @@ export interface Album {
   label: string;
   total_tracks: number;
   release_date_precision: string;
+  tracks?: Track[];
 }
 
 export interface Track {
   id: string;
   name: string;
   artists: Artist[];
-  _album: {
+  album?: {
     name: string;
     images: SpotifyImage[];
     release_date: string;
@@ -40,7 +41,8 @@ export interface Track {
   };
   duration_ms: number;
   artists_joined: string;
-  preview_url: string;
+  images?: SpotifyImage[];
+  preview_url: string | null;
   track_number: number;
   disc_number: number;
 }
