@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import Paper from '@mui/material/Paper';
-import {Route, Routes, useLocation, useNavigate} from 'react-router-dom';
+import {Route, Routes, useLocation, useNavigate, Link as RouterLink} from 'react-router-dom';
 import {
     Alert,
     Box,
@@ -18,7 +18,9 @@ import {
     SelectChangeEvent,
     Tooltip,
     Typography,
-    Button
+    Button,
+    Tabs,
+    Tab
 } from '@mui/material';
 import Navbar from './components/Navbar';
 import SortIcon from '@mui/icons-material/Sort';
@@ -853,10 +855,32 @@ const PlaylistsPage = () => {
     );
 };
 
+interface TabPanelProps {
+    children?: React.ReactNode;
+    index: number;
+    value: number;
+}
+
+const TabPanel = (props: TabPanelProps) => {
+    const { children, value, index, ...other } = props;
+    return (
+        <div
+            role="tabpanel"
+            hidden={value !== index}
+            id={`tabpanel-${index}`}
+            aria-labelledby={`tab-${index}`}
+            {...other}
+        >
+            {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
+        </div>
+    );
+};
+
 const App = () => {
     const playlistYears = [2025, 2024, 2023, 2022, 2021, 2020];
     const playlistDecades = [202, 201, 200, 199, 198, 197, 196, 195];
     const [dataDate, setDataDate] = useState<string | null>(null);
+    const [currentTab, setCurrentTab] = useState(0);
 
     useEffect(() => {
         const fetchDataDate = async () => {
@@ -873,68 +897,56 @@ const App = () => {
         fetchDataDate();
     }, []);
 
+    const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+        setCurrentTab(newValue);
+    };
+
     return (
         <Box sx={{display: 'flex', flexDirection: 'column', minHeight: '100vh'}}>
             <Navbar dataDate={dataDate}/>
-            <Paper elevation={4} sx={{p: 3, minWidth: 350, bgcolor: 'background.paper'}}>
-                <Typography variant="h6" sx={{mb: 1}}>
-                    Create Playlists
-                </Typography>
-                <Box sx={{display: 'flex', flexDirection: 'row', gap: 2, m: 2}}>
-                    <Typography variant="h6" sx={{mb: 1}}>
-                        By Year
-                    </Typography>
-                    {playlistYears.map(year => (
-                        <Button
-                            key={year}
-                            variant="contained"
-                            color="secondary"
-                            onClick={async () => {
-                                await fetch(`http://localhost:8001/make_playlist_for_year/` + JSON.stringify(year),
-                                    {method: 'POST',});
-                            }}
-                        >
-                            {year}
-                        </Button>
-                    ))}
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
+                <Tabs value={currentTab} onChange={handleTabChange} centered>
+                    <Tab label="Library" />
+                    <Tab label="Create Playlists" />
+                </Tabs>
+            </Box>
+
+            <TabPanel value={currentTab} index={0}>
+                <Box sx={{ bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+                    <Container>
+                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, py: 2 }}>
+                            <Button
+                                component={RouterLink}
+                                to="/artists"
+                                variant={window.location.pathname === '/artists' || window.location.pathname === '/' ? 'contained' : 'outlined'}
+                            >
+                                Artists
+                            </Button>
+                            <Button
+                                component={RouterLink}
+                                to="/albums"
+                                variant={window.location.pathname === '/albums' ? 'contained' : 'outlined'}
+                            >
+                                Albums
+                            </Button>
+                            <Button
+                                component={RouterLink}
+                                to="/tracks"
+                                variant={window.location.pathname === '/tracks' ? 'contained' : 'outlined'}
+                            >
+                                Tracks
+                            </Button>
+                            <Button
+                                component={RouterLink}
+                                to="/playlists"
+                                variant={window.location.pathname === '/playlists' ? 'contained' : 'outlined'}
+                            >
+                                Playlists
+                            </Button>
+                        </Box>
+                    </Container>
                 </Box>
-                <Box sx={{display: 'flex', flexDirection: 'row', gap: 2, m: 2}}>
-                    <Typography variant="h6" sx={{mb: 1}}>
-                        By Decade
-                    </Typography>
-                    {playlistDecades.map(decade => (
-                        <Button
-                            key={decade}
-                            variant="contained"
-                            color="secondary"
-                            onClick={async () => {
-                                await fetch(`http://localhost:8001/make_playlist_for_decade/` + JSON.stringify(decade),
-                                    {method: 'POST',});
-                            }}
-                        >
-                            {decade}0s
-                        </Button>
-                    ))}
-                </Box>
-                <Box sx={{display: 'flex', flexDirection: 'row', gap: 2, m: 2}}>
-                    <Typography variant="h6" sx={{mb: 1}}>
-                        By Years in Decade
-                    </Typography>
-                    {playlistDecades.map(decade => (
-                        <Button
-                            key={decade}
-                            variant="contained"
-                            color="secondary"
-                            onClick={async () => {
-                                await fetch(`http://localhost:8001/make_playlist_for_decade/` + JSON.stringify(decade),
-                                    {method: 'POST',});
-                            }}
-                        >
-                            {decade}0s
-                        </Button>
-                    ))}
-                </Box>
-                <Box component="main" sx={{flexGrow: 1, py: 4}}>
+                <Box component="main" sx={{flexGrow: 1}}>
                     <Routes>
                         <Route path="/" element={<ArtistsPage/>}/>
                         <Route path="/artists" element={<ArtistsPage/>}/>
@@ -943,7 +955,80 @@ const App = () => {
                         <Route path="/playlists" element={<PlaylistsPage/>}/>
                     </Routes>
                 </Box>
-            </Paper>
+            </TabPanel>
+
+            <TabPanel value={currentTab} index={1}>
+                <Container>
+                    <Paper elevation={4} sx={{p: 3, bgcolor: 'background.paper'}}>
+                        <Typography variant="h4" sx={{mb: 3}}>
+                            Create Playlists
+                        </Typography>
+
+                        <Box sx={{mb: 4}}>
+                            <Typography variant="h6" sx={{mb: 2}}>
+                                By Year
+                            </Typography>
+                            <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 2}}>
+                                {playlistYears.map(year => (
+                                    <Button
+                                        key={year}
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={async () => {
+                                            await fetch(`http://localhost:8001/make_playlist_for_year/` + JSON.stringify(year),
+                                                {method: 'POST',});
+                                        }}
+                                    >
+                                        {year}
+                                    </Button>
+                                ))}
+                            </Box>
+                        </Box>
+
+                        <Box sx={{mb: 4}}>
+                            <Typography variant="h6" sx={{mb: 2}}>
+                                By Decade
+                            </Typography>
+                            <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 2}}>
+                                {playlistDecades.map(decade => (
+                                    <Button
+                                        key={decade}
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={async () => {
+                                            await fetch(`http://localhost:8001/make_playlist_for_decade/` + JSON.stringify(decade),
+                                                {method: 'POST',});
+                                        }}
+                                    >
+                                        {decade}0s
+                                    </Button>
+                                ))}
+                            </Box>
+                        </Box>
+
+                        <Box>
+                            <Typography variant="h6" sx={{mb: 2}}>
+                                By Years in Decade
+                            </Typography>
+                            <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 2}}>
+                                {playlistDecades.map(decade => (
+                                    <Button
+                                        key={decade}
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={async () => {
+                                            await fetch(`http://localhost:8001/make_playlist_for_decade/` + JSON.stringify(decade),
+                                                {method: 'POST',});
+                                        }}
+                                    >
+                                        {decade}0s
+                                    </Button>
+                                ))}
+                            </Box>
+                        </Box>
+                    </Paper>
+                </Container>
+            </TabPanel>
         </Box>
     );
 };
