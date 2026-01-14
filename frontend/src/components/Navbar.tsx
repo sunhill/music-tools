@@ -18,40 +18,6 @@ const Navbar: React.FC<NavbarProps> = ({ dataDate }) => {
             </Typography>
           )}
         </Typography>
-        <Box>
-          <Button
-            color="inherit"
-            component={RouterLink}
-            to="/artists"
-            sx={{ mx: 1 }}
-          >
-            Artists
-          </Button>
-          <Button
-            color="inherit"
-            component={RouterLink}
-            to="/albums"
-            sx={{ mx: 1 }}
-          >
-            Albums
-          </Button>
-          <Button
-            color="inherit"
-            component={RouterLink}
-            to="/tracks"
-            sx={{ mx: 1 }}
-          >
-            Tracks
-          </Button>
-          <Button
-            color="inherit"
-            component={RouterLink}
-            to="/playlists"
-            sx={{ mx: 1 }}
-          >
-            Playlists
-          </Button>
-        </Box>
       </Toolbar>
     </AppBar>
   );
