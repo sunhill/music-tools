@@ -3,7 +3,10 @@ from threading import Lock
 
 from black import Optional
 
-from utils.rate_limiter.rate_limiter_interface import RateLimiterInterface, RateLimiterConfig
+from utils.rate_limiter.rate_limiter_interface import (
+    RateLimiterInterface,
+    RateLimiterConfig,
+)
 
 
 class InMemoryRateLimiter(RateLimiterInterface):
@@ -39,7 +42,7 @@ class InMemoryRateLimiter(RateLimiterInterface):
             return {
                 "remaining": self.tokens,
                 "reset": self.last_refill + 60 / self.rate,
-                "limit": self.burst_size
+                "limit": self.burst_size,
             }
 
     def get_retry_after(self) -> int:

@@ -32,12 +32,15 @@ from spotify.spotify_utils import (
     zip_data,
     get_config_location,
 )
-from utils.rate_limiter.rate_limiter_interface import RateLimiterInterface, RateLimiterConfig
+from utils.rate_limiter.rate_limiter_interface import (
+    RateLimiterInterface,
+    RateLimiterConfig,
+)
 from utils.rate_limiter.redis_rate_limiter import RedisRateLimiter
 
 logger = logging.getLogger(__name__)
 # Turn off logging for spotipy.client
-logging.getLogger('spotipy.client').setLevel(logging.CRITICAL)
+logging.getLogger("spotipy.client").setLevel(logging.CRITICAL)
 
 
 class SpotifyDataGetter:
@@ -414,10 +417,11 @@ class SpotifyDataGetter:
                 logger.debug(f"Track {album} has no upc")
                 albums_with_no_upc.append(album)
 
-        deduped_albums: list[Any] = sorted(unique_albums_by_upc.values(),
-                                           key=lambda x: x["added_at"],
-                                           reverse=True,
-                                           )
+        deduped_albums: list[Any] = sorted(
+            unique_albums_by_upc.values(),
+            key=lambda x: x["added_at"],
+            reverse=True,
+        )
         deduped_albums.extend(albums_with_no_upc)
         logger.debug(f"After dedupe: {len(deduped_albums)}")
         yield from deduped_albums

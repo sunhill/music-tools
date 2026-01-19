@@ -40,11 +40,12 @@ from utils.rate_limiter.rate_limiter_interface import (
     RateLimiterConfig,
 )
 from utils.rate_limiter.redis_rate_limiter import RedisRateLimiter
+
 # from utils.rate_limiter.in_memory_rate_limiter import InMemoryRateLimiter
 
 logger = logging.getLogger(__name__)
 # Turn off logging for spotipy.client
-logging.getLogger('spotipy.client').setLevel(logging.CRITICAL)
+logging.getLogger("spotipy.client").setLevel(logging.CRITICAL)
 
 
 class BaseSpotifyDataGetter:
@@ -411,7 +412,7 @@ class BaseSpotifyDataGetter:
 
     @staticmethod
     def get_all_unique_artists_in_playlists(
-            playlists: list, playlist_tracks: dict
+        playlists: list, playlist_tracks: dict
     ) -> dict:
         logger.debug("Getting all unique artists in playlists")
         all_artists = {}
@@ -445,7 +446,7 @@ class AsyncSpotifyDataGetter(BaseSpotifyDataGetter):
     """Async version of SpotifyDataGetter with parallel processing capabilities."""
 
     async def _process_batch(
-            self, batch: List[Dict[str, Any]], process_func: callable
+        self, batch: List[Dict[str, Any]], process_func: callable
     ) -> List[Dict[str, Any]]:
         """Process a batch of items in parallel using ThreadPoolExecutor."""
         logger.debug(f"Processing batch of {len(batch)} items")
@@ -521,7 +522,7 @@ class AsyncSpotifyDataGetter(BaseSpotifyDataGetter):
         initial_response = await self._make_rate_limited_request_async(
             get_func, limit=1, offset=0
         )
-        total = initial_response['total']
+        total = initial_response["total"]
         logger.info(f"Total items to retrieve: {total}")
 
         # Calculate the number of batches needed
@@ -540,7 +541,7 @@ class AsyncSpotifyDataGetter(BaseSpotifyDataGetter):
                 batch = await self._make_rate_limited_request_async(
                     get_func, limit=batch_size, offset=offset
                 )
-                items = batch['items']
+                items = batch["items"]
                 logger.debug(f"Retrieved {len(items)} items in batch {batch_index + 1}")
                 processed_items = await self._process_batch(items, process_func)
                 return processed_items
@@ -561,13 +562,15 @@ class AsyncSpotifyDataGetter(BaseSpotifyDataGetter):
         """Get all saved tracks using parallel processing."""
         logger.info("Starting parallel retrieval of saved tracks")
         return await self._get_all_items_parallel(
-            self.spotify.current_user_saved_tracks, lambda item: item['track']
+            self.spotify.current_user_saved_tracks, lambda item: item["track"]
         )
 
     async def get_all_saved_albums_parallel(self) -> List[Dict[str, Any]]:
         """Get all saved albums using parallel processing."""
         logger.info("Starting parallel retrieval of saved albums")
-        return await self._get_all_items_parallel(self.spotify.current_user_saved_albums, lambda item: item['album'])
+        return await self._get_all_items_parallel(
+            self.spotify.current_user_saved_albums, lambda item: item["album"]
+        )
 
     async def get_all_playlists_parallel(self) -> List[Dict[str, Any]]:
         """Get all playlists using parallel processing."""
@@ -576,14 +579,16 @@ class AsyncSpotifyDataGetter(BaseSpotifyDataGetter):
             self.spotify.current_user_playlists, lambda item: item
         )
 
-    async def get_playlist_tracks_parallel(self, playlist_id: str) -> List[Dict[str, Any]]:
+    async def get_playlist_tracks_parallel(
+        self, playlist_id: str
+    ) -> List[Dict[str, Any]]:
         """Get all tracks from a playlist using parallel processing."""
         logger.info(f"Starting parallel retrieval of tracks for playlist {playlist_id}")
         return await self._get_all_items_parallel(
             lambda limit, offset: self.spotify.playlist_items(
                 playlist_id, limit=limit, offset=offset, additional_types=("track")
             ),
-            lambda item: item['track'],
+            lambda item: item["track"],
         )
 
     async def get_all_saved_artists_parallel(self) -> List[Dict[str, Any]]:

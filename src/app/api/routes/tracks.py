@@ -19,22 +19,24 @@ async def list_tracks(
     page: int = 1,
     limit: int = 12,
     sort: str = None,
-    field: str = 'name',
-    tracks: Annotated[List[Track], Depends(get_tracks)] = None
+    field: str = "name",
+    tracks: Annotated[List[Track], Depends(get_tracks)] = None,
 ):
     logger.info(f"Getting tracks page {page}")
     total = len(app.tracks)
     total_filtered = len(tracks)
-    
+
     # Transform the tracks data to match the frontend's expected format
     transformed_tracks = []
     for track in tracks:
         # Handle both Pydantic models and dictionaries
-        track_data = track.model_dump() if hasattr(track, 'model_dump') else track
-        
+        track_data = track.model_dump() if hasattr(track, "model_dump") else track
+
         # Handle the track data structure
-        track_info = track_data.get("track", {}) if "track" in track_data else track_data
-        
+        track_info = (
+            track_data.get("track", {}) if "track" in track_data else track_data
+        )
+
         # Handle the album data structure
         album_info = track_info.get("album", {})
         if isinstance(album_info, dict):
@@ -43,22 +45,24 @@ async def list_tracks(
                 "images": album_info.get("images", []),
                 "release_date": album_info.get("release_date", ""),
                 "album_type": album_info.get("album_type", ""),
-                "total_tracks": album_info.get("total_tracks", 0)
+                "total_tracks": album_info.get("total_tracks", 0),
             }
-        
+
         transformed_track = {
             "id": track_info.get("id", ""),
             "name": track_info.get("name", ""),
             "artists": track_info.get("artists", []),
             "duration_ms": track_info.get("duration_ms", 0),
-            "artists_joined": ", ".join([artist.get("name", "") for artist in track_info.get("artists", [])]),
+            "artists_joined": ", ".join(
+                [artist.get("name", "") for artist in track_info.get("artists", [])]
+            ),
             "_album": album_info,
             "preview_url": track_info.get("preview_url", ""),
             "track_number": track_info.get("track_number", 0),
-            "disc_number": track_info.get("disc_number", 0)
+            "disc_number": track_info.get("disc_number", 0),
         }
         transformed_tracks.append(transformed_track)
-    
+
     return {
         "tracks": transformed_tracks,
         "total": total,

@@ -9,9 +9,7 @@ logger = logging.getLogger(__name__)
 def main():
     setup_app_logging(logger, logging.DEBUG)
 
-    spotify_playlist_maker: SpotifyPlaylistMaker = SpotifyPlaylistMaker(
-        use_zip=True
-    )
+    spotify_playlist_maker: SpotifyPlaylistMaker = SpotifyPlaylistMaker(use_zip=True)
     make_playlists(spotify_playlist_maker)
 
 
@@ -35,13 +33,15 @@ def make_playlists(spotify_playlist_maker):
     #                                                    spotify_playlist_maker.saved_tracks)
     #
     # spotify_playlist_maker.create_playlists_from_liked_albums()
-    #get list from colours.txt
+    # get list from colours.txt
 
     with open("data/search_term_files/colours.txt", "r") as f:
         colours = [line.strip() for line in f if line.strip()]
 
     # colours = ["Red", "blue", "green"]
-    spotify_playlist_maker.create_playlist_for_search_terms(colours, "colours", spotify_playlist_maker.saved_tracks)
+    spotify_playlist_maker.create_playlist_for_search_terms(
+        colours, "colours", spotify_playlist_maker.saved_tracks
+    )
 
     # spotify_playlist_maker.make_playlists_private(playlists)
     # spotify_playlist_maker.create_multiple_playlists_from_tracks(

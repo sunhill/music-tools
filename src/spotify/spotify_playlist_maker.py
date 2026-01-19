@@ -21,7 +21,9 @@ from spotify.spotify_utils import (
     get_config_location,
     get_memory_usage,
     PLAYLIST_TRACKS,
-    UNIQUE_PLAYLIST_TRACKS, get_latest_zip, )
+    UNIQUE_PLAYLIST_TRACKS,
+    get_latest_zip,
+)
 
 TOP = "Top"
 
@@ -63,18 +65,20 @@ class SpotifyPlaylistMaker:
 
         self.spotify_username = config_parser["spotify"]["spotify_user"]
         logger.info(f"Using user name {self.spotify_username}")
-        self.save_location = os.path.join(self.save_location, self.spotify_username + "/")
+        self.save_location = os.path.join(
+            self.save_location, self.spotify_username + "/"
+        )
         logger.info(f"Using save location {self.save_location}")
 
         self.raw_data_location = (
-                self.save_location + config_parser["spotify"]["raw_data_location"]
+            self.save_location + config_parser["spotify"]["raw_data_location"]
         )
         self.user = config_parser["spotify"]["spotify_user"]
 
         if not spotify:
             self.spotify = get_spotify_wrapper(
                 scope="user-library-read,user-follow-read,playlist-read-private,"
-                      "user-top-read,playlist-modify-public,playlist-read-collaborative,playlist-modify-private"
+                "user-top-read,playlist-modify-public,playlist-read-collaborative,playlist-modify-private"
             )
         else:
             self.spotify = spotify
@@ -116,36 +120,28 @@ class SpotifyPlaylistMaker:
             [album["album_type"] for album in self.saved_albums]
         )
         self.compilations = [
-            album
-            for album in self.saved_albums
-            if album["album_type"] == "compilation"
+            album for album in self.saved_albums if album["album_type"] == "compilation"
         ]
         self.va_compilations: List = [
             album
             for album in self.saved_albums
             if album["album_type"] == "compilation"
-               and album["artists"][0]["name"] == "Various Artists"
+            and album["artists"][0]["name"] == "Various Artists"
         ]
         self.sa_compilations: List = [
             album
             for album in self.saved_albums
             if album["album_type"] == "compilation"
-               and album["artists"][0]["name"] != "Various Artists"
+            and album["artists"][0]["name"] != "Various Artists"
         ]
         self.albums: List = [
-            album
-            for album in self.saved_albums
-            if album["album_type"] == "album"
+            album for album in self.saved_albums if album["album_type"] == "album"
         ]
         self.singles: List = [
-            album
-            for album in self.saved_albums
-            if album["album_type"] == "single"
+            album for album in self.saved_albums if album["album_type"] == "single"
         ]
         self.not_compilations: List = [
-            album
-            for album in self.saved_albums
-            if album["album_type"] != "compilation"
+            album for album in self.saved_albums if album["album_type"] != "compilation"
         ]
         logger.debug("Data collections set up")
 
@@ -448,8 +444,7 @@ class SpotifyPlaylistMaker:
         )
 
         track_ids: List = [
-            track["id"]
-            for track in self.filter_tracks_by_year(self.saved_tracks, year)
+            track["id"] for track in self.filter_tracks_by_year(self.saved_tracks, year)
         ]
         random_track_ids: List = self.get_random_track_selections(
             track_ids, int(number_of_songs * from_tracks)
@@ -463,7 +458,7 @@ class SpotifyPlaylistMaker:
         )
 
     def create_multiple_playlists_from_tracks(
-            self, tracks, playlist_prefix=LIKED, sort_by="artist"
+        self, tracks, playlist_prefix=LIKED, sort_by="artist"
     ):
         logger.debug(
             f"Creating multiple playlists from {len(tracks)} tracks sorting by {sort_by}"
@@ -498,9 +493,8 @@ class SpotifyPlaylistMaker:
             track_ids=track_ids, playlist_name=playlist_name
         )
 
-
     def create_playlist_for_search_term(
-            self, search_term, playlist_name, tracks: list = None
+        self, search_term, playlist_name, tracks: list = None
     ):
         logger.debug(f"Creating playlist {playlist_name} for search term {search_term}")
         filtered_tracks = self.filter_tracks_by_search_term_any(tracks, [search_term])
@@ -510,9 +504,11 @@ class SpotifyPlaylistMaker:
         )
 
     def create_playlist_for_search_terms(
-            self, search_terms: list, playlist_name: str, tracks: list = None
+        self, search_terms: list, playlist_name: str, tracks: list = None
     ):
-        logger.debug(f"Creating playlist {playlist_name} for search terms {search_terms}")
+        logger.debug(
+            f"Creating playlist {playlist_name} for search terms {search_terms}"
+        )
         filtered_tracks = self.filter_tracks_by_search_term_any(tracks, search_terms)
         track_ids: List = [track["id"] for track in filtered_tracks]
         self.create_playlist_with_tracks(
@@ -520,7 +516,7 @@ class SpotifyPlaylistMaker:
         )
 
     def create_playlist_for_artist(
-            self, artist: str, playlist_name: str, tracks: list = None
+        self, artist: str, playlist_name: str, tracks: list = None
     ):
         logger.debug(f"Creating playlist {playlist_name} for artist {artist}")
         filtered_tracks = self.filter_tracks_by_artist(tracks, [artist])
@@ -530,7 +526,7 @@ class SpotifyPlaylistMaker:
         )
 
     def create_playlist_for_artists(
-            self, artists: list, playlist_name: str, tracks: list = None
+        self, artists: list, playlist_name: str, tracks: list = None
     ):
         logger.debug(f"Creating playlist {playlist_name} for artists {artists}")
         filtered_tracks = self.filter_tracks_by_artist(tracks, artists)
@@ -539,23 +535,20 @@ class SpotifyPlaylistMaker:
             track_ids=track_ids, playlist_name=playlist_name
         )
 
-
-
     @staticmethod
     def filter_tracks_by_year(tracks, year):
         logger.debug(f"Filtering {len(tracks)} tracks by year {year}")
         filtered_tracks: List = list(
             filter(
-                lambda track: str(track["album"]["release_date"]).startswith(
-                    year
-                ),
+                lambda track: str(track["album"]["release_date"]).startswith(year),
                 tracks,
             )
         )
         return filtered_tracks
 
-    '''
-    Filter tracks by search term, where the search term matches any word in the track name.'''
+    """
+    Filter tracks by search term, where the search term matches any word in the track name."""
+
     @staticmethod
     def filter_tracks_by_search_term_any(tracks, search_terms: list):
         logger.debug(f"Filtering {len(tracks)} tracks by search term {search_terms}")
@@ -595,14 +588,13 @@ class SpotifyPlaylistMaker:
                 # make this filter contains instead of equals e.g. "Beatles" should match "The Beatles"
                 # should match if any artist in the list is in the track's artists or name
                 # look in all of the artists in the track, not just the first one
-
                 # lambda track: any(
                 #     artist.lower() in track["artists"][0]["name"].lower()
                 #     or artist.lower() in track["name"].lower()
                 #     for artist in artists
                 lambda track: any(
-                    artist.lower() in track["name"].lower() or
-                    artist.lower() in artist_obj["name"].lower()
+                    artist.lower() in track["name"].lower()
+                    or artist.lower() in artist_obj["name"].lower()
                     for artist_obj in track["artists"]
                     for artist in artists
                 ),
@@ -696,7 +688,7 @@ class SpotifyPlaylistMaker:
     @staticmethod
     def batch_list(list_to_batch: List, batch_size: int):
         for i in range(0, len(list_to_batch), batch_size):
-            yield list_to_batch[i: i + batch_size]
+            yield list_to_batch[i : i + batch_size]
 
     def combine_all_top_playlists(self):
         logger.debug("Combining all top playlists")

@@ -33,6 +33,7 @@ separator = "\t"
 
 logger = logging.getLogger(__name__)
 
+
 async def get_data_location():
     config_location = get_config_location()
     logger.info(f"Using config file {config_location}")
@@ -89,13 +90,14 @@ def get_latest_zips(dir_location: str) -> list[str]:
 
     return res
 
+
 def has_complete_data(dir_path: str) -> bool:
     """Check if a directory has all required data files."""
     required_files = [
         f"{SAVED_ARTISTS}.gz",
         f"{SAVED_ALBUMS}.gz",
         f"{SAVED_TRACKS}.gz",
-        f"{PLAYLISTS}.gz"
+        f"{PLAYLISTS}.gz",
     ]
     for file_name in required_files:
         file_path = os.path.join(dir_path, file_name)
@@ -120,7 +122,9 @@ def most_recent_directory(dir_location):
             return sub_dir
 
     # Fallback to most recent if no complete directory found
-    logger.warning(f"No complete data directory found, using most recent: {sub_dirs[0]}")
+    logger.warning(
+        f"No complete data directory found, using most recent: {sub_dirs[0]}"
+    )
     most_recent_dir = sub_dirs[0]
     return most_recent_dir
 
@@ -135,7 +139,7 @@ def zip_data(data, data_type, data_location):
     get_memory_usage()
     zip_filename = f"{data_location}/{data_type}.gz"
     with gzip.open(zip_filename, "wb", compresslevel=5) as handle:
-        handle.write(json_string.encode('utf-8'))
+        handle.write(json_string.encode("utf-8"))
     logger.debug(f"Data compressed to {zip_filename}")
 
 
@@ -156,7 +160,7 @@ def unzip_data_from_zip(zip_filename):
     get_memory_usage()
     with open(zip_filename, "rb") as handle:
         get_memory_usage()
-        read = gzip.decompress(handle.read()).decode('utf-8')
+        read = gzip.decompress(handle.read()).decode("utf-8")
         data = json.loads(read)
         logger.debug(f"Decompressed data size: {len(data)}")
         get_memory_usage()

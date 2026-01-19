@@ -3,13 +3,23 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from spotify.spotify_utils import get_memory_usage, get_data_location, unzip_data_from_zip, get_latest_zip, \
-    SAVED_ALBUMS, SAVED_ARTISTS, SAVED_TRACKS, PLAYLISTS, most_recent_directory
+from spotify.spotify_utils import (
+    get_memory_usage,
+    get_data_location,
+    unzip_data_from_zip,
+    get_latest_zip,
+    SAVED_ALBUMS,
+    SAVED_ARTISTS,
+    SAVED_TRACKS,
+    PLAYLISTS,
+    most_recent_directory,
+)
 
 logging.basicConfig(
     level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger("fastapi_app")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -24,7 +34,6 @@ async def lifespan(app: FastAPI):
     finally:
         logger.info("Shutting down FastAPI application")
         # Perform any cleanup here if necessary
-
 
 
 async def load_data(app: FastAPI):
@@ -81,4 +90,3 @@ async def load_data(app: FastAPI):
         logger.info("Zipped data loaded")
     except Exception as e:
         logger.error(f"Error loading zipped data: {e}")
-

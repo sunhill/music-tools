@@ -149,5 +149,6 @@ class Playlist(BaseModel):
     _type: str
     _uri: str
 
+
 class PlaylistRequest(BaseModel):
     year: str | None = None

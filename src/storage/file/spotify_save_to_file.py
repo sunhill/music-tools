@@ -13,7 +13,8 @@ from spotify.spotify_save import SpotifySave
 from spotify.spotify_utils import (
     setup_app_logging,
     most_recent_directory,
-    unzip_data_from_zip, get_config_location,
+    unzip_data_from_zip,
+    get_config_location,
 )
 
 XLSX = ".xlsx"
@@ -68,9 +69,15 @@ class SpotifyToFile(SpotifySave):
             os.makedirs(self.playlist_location)
             logger.debug("Created Playlist Location: " + self.playlist_location)
 
-        self.individual_playlist_folder = self.config_parser["spotify"]["individual_playlist_location"]
-        self.individual_playlist_location = os.path.join(self.save_location, self.individual_playlist_folder)
-        logger.debug("Individual Playlist Location: " + self.individual_playlist_location)
+        self.individual_playlist_folder = self.config_parser["spotify"][
+            "individual_playlist_location"
+        ]
+        self.individual_playlist_location = os.path.join(
+            self.save_location, self.individual_playlist_folder
+        )
+        logger.debug(
+            "Individual Playlist Location: " + self.individual_playlist_location
+        )
         if not os.path.exists(self.individual_playlist_location):
             os.makedirs(self.individual_playlist_location)
             logger.debug(
@@ -319,9 +326,7 @@ class SpotifyToFile(SpotifySave):
                     external_ids = album["external_ids"]
                     upc = self.get_external_id(external_ids, "upc")
                     album_name = album["name"]
-                    artists = ", ".join(
-                        [artist["name"] for artist in album["artists"]]
-                    )
+                    artists = ", ".join([artist["name"] for artist in album["artists"]])
                     # mbid = get_album_mbid(album_name, artists, upc)
                     mbid = ""
                     release_year = calc_release_year(
@@ -410,9 +415,7 @@ class SpotifyToFile(SpotifySave):
                 track["album"]["release_date"],
                 track["album"]["release_date_precision"],
             )
-            track["duration_min"] = self.get_duration_in_min(
-                track["duration_ms"]
-            )
+            track["duration_min"] = self.get_duration_in_min(track["duration_ms"])
 
         tracks = sorted(
             tracks,
@@ -644,25 +647,19 @@ class SpotifyToFile(SpotifySave):
         most_recent = most_recent_directory(self.raw_data_location)
         logger.debug(f"Most recent directory: {most_recent}")
         zip_folder = f"{self.raw_data_location}/{most_recent}"
-        self.save_artists(
-            unzip_data_from_zip(f"{zip_folder}/saved_artists.gz")
-        )
-        self.save_albums(
-            unzip_data_from_zip(f"{zip_folder}/saved_albums.gz")
-        )
+        self.save_artists(unzip_data_from_zip(f"{zip_folder}/saved_artists.gz"))
+        self.save_albums(unzip_data_from_zip(f"{zip_folder}/saved_albums.gz"))
         # self.save_album_tracks(
         #     unzip_data_from_zip(f"{zip_folder}/saved_album_tracks.gz")
         # )
-        self.save_tracks(
-            unzip_data_from_zip(f"{zip_folder}/saved_tracks.gz")
-        )
+        self.save_tracks(unzip_data_from_zip(f"{zip_folder}/saved_tracks.gz"))
         # self.save_playlist_tracks(
         #     unzip_data_from_zip(f"{zip_folder}/playlists.gz"),
         #     unzip_data_from_zip(f"{zip_folder}/playlist_tracks.gz"),
         # )
         self.save_playlist_details(
             unzip_data_from_zip(f"{zip_folder}/playlists.gz"),
-            None
+            None,
             # unzip_data_from_zip(f"{zip_folder}/playlist_tracks.gz"),
         )
         # self.save_individual_playlists(

@@ -4,7 +4,11 @@ import time
 from typing import Optional
 import redis
 
-from utils.rate_limiter.rate_limiter_interface import RateLimiterInterface, RateLimiterConfig, RateLimitInfo
+from utils.rate_limiter.rate_limiter_interface import (
+    RateLimiterInterface,
+    RateLimiterConfig,
+    RateLimitInfo,
+)
 
 logger = logging.getLogger(__name__)
 

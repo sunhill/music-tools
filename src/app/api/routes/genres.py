@@ -7,6 +7,7 @@ router = APIRouter()
 _genres_cache = None
 _cache_lock = threading.Lock()
 
+
 @router.get("/genres", response_class=JSONResponse)
 async def list_genres():
     global _genres_cache
@@ -15,7 +16,9 @@ async def list_genres():
             if _genres_cache is None:  # Double-checked locking
                 genres_set = set()
                 for artist in app.artists:
-                    artist_data = artist.model_dump() if hasattr(artist, 'model_dump') else artist
+                    artist_data = (
+                        artist.model_dump() if hasattr(artist, "model_dump") else artist
+                    )
                     for genre in artist_data.get("genres", []):
                         genres_set.add(genre)
                 _genres_cache = sorted(genres_set)

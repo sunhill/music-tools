@@ -62,24 +62,24 @@ async def get_artists(
     if search:
         search = search.lower()
         artists = [
-            artist for artist in artists if search in artist.get('name', '').lower()
+            artist for artist in artists if search in artist.get("name", "").lower()
         ]
 
     # Apply genre filter if provided
     if genre:
-        artists = [artist for artist in artists if genre in artist.get('genres', [])]
+        artists = [artist for artist in artists if genre in artist.get("genres", [])]
 
     # Sort if requested - apply to full dataset before pagination
     if sort:
         # Convert to list of dicts for sorting
         artists_dicts = [
-            artist.model_dump() if hasattr(artist, 'model_dump') else artist
+            artist.model_dump() if hasattr(artist, "model_dump") else artist
             for artist in artists
         ]
         artists_dicts = sorted(
             artists_dicts,
-            key=lambda x: x.get('name', '').lower(),
-            reverse=(sort == 'desc'),
+            key=lambda x: x.get("name", "").lower(),
+            reverse=(sort == "desc"),
         )
         # Convert back to Artist objects
         artists = [Artist(**artist) for artist in artists_dicts]
@@ -95,7 +95,7 @@ async def get_albums(
     page: int = 1,
     limit: int = 12,
     sort: str = None,
-    field: str = 'name',
+    field: str = "name",
     search: str = None,
     type: str = None,
 ) -> List[Album]:
@@ -108,10 +108,10 @@ async def get_albums(
         albums = [
             album
             for album in albums
-            if search in album.get('name', '').lower()
-               or any(
-                search in artist.get('name', '').lower()
-                for artist in album.get('artists', [])
+            if search in album.get("name", "").lower()
+            or any(
+                search in artist.get("name", "").lower()
+                for artist in album.get("artists", [])
             )
         ]
 
@@ -120,19 +120,19 @@ async def get_albums(
 
     # Sort if requested - apply to full dataset before pagination
     if sort:
-        if field == 'artist':
+        if field == "artist":
             albums = sorted(
                 albums,
                 key=lambda x: ", ".join(
-                    [artist.get("name", "") for artist in x.get('artists', [])]
+                    [artist.get("name", "") for artist in x.get("artists", [])]
                 ).lower(),
-                reverse=(sort == 'desc'),
+                reverse=(sort == "desc"),
             )
         else:
             albums = sorted(
                 albums,
-                key=lambda x: x.get('name', '').lower(),
-                reverse=(sort == 'desc'),
+                key=lambda x: x.get("name", "").lower(),
+                reverse=(sort == "desc"),
             )
 
     return albums  # Return all albums without pagination for now
@@ -147,7 +147,7 @@ async def get_tracks(
     page: int = 1,
     limit: int = 12,
     sort: str = None,
-    field: str = 'name',
+    field: str = "name",
     search: str = None,
 ) -> List[Track]:
     # Get all tracks
@@ -159,35 +159,39 @@ async def get_tracks(
         tracks = [
             track
             for track in tracks
-            if search in track.get('name', '').lower()
-               or any(
-                search in artist.get('name', '').lower()
-                for artist in track.get('artists', [])
+            if search in track.get("name", "").lower()
+            or any(
+                search in artist.get("name", "").lower()
+                for artist in track.get("artists", [])
             )
-               or search in track.get('album', {}).get('name', '').lower()
+            or search in track.get("album", {}).get("name", "").lower()
         ]
 
     # Sort if requested - apply to full dataset before pagination
     logger.info(f"Sorting tracks by field: {field}, order: {sort}")
     if sort:
-        if field == 'duration':
+        if field == "duration":
             tracks = sorted(
-                tracks, key=lambda x: x.get('duration_ms', 0), reverse=(sort == 'desc')
+                tracks, key=lambda x: x.get("duration_ms", 0), reverse=(sort == "desc")
             )
-        elif field == 'artists_joined':
+        elif field == "artists_joined":
             for track in tracks:
-                track["artists_joined"] = ", ".join([artist.get("name", "") for artist in track.get("artists", [])]),
+                track["artists_joined"] = (
+                    ", ".join(
+                        [artist.get("name", "") for artist in track.get("artists", [])]
+                    ),
+                )
 
             tracks = sorted(
                 tracks,
                 key=lambda x: x.get("artists_joined", ""),
-                reverse=(sort == 'desc'),
+                reverse=(sort == "desc"),
             )
         else:
             tracks = sorted(
                 tracks,
-                key=lambda x: x.get('name', '').lower(),
-                reverse=(sort == 'desc'),
+                key=lambda x: x.get("name", "").lower(),
+                reverse=(sort == "desc"),
             )
 
     # Apply pagination after sorting
@@ -208,21 +212,21 @@ async def get_playlists(
         playlists = [
             playlist
             for playlist in playlists
-            if search in playlist.get('name', '').lower()
-               or search in playlist.get('description', '').lower()
+            if search in playlist.get("name", "").lower()
+            or search in playlist.get("description", "").lower()
         ]
 
     # Sort if requested
     if sort:
         # Convert to list of dicts for sorting
         playlists_dicts = [
-            playlist.model_dump() if hasattr(playlist, 'model_dump') else playlist
+            playlist.model_dump() if hasattr(playlist, "model_dump") else playlist
             for playlist in playlists
         ]
         playlists_dicts = sorted(
             playlists_dicts,
-            key=lambda x: x.get('name', '').lower(),
-            reverse=(sort == 'desc'),
+            key=lambda x: x.get("name", "").lower(),
+            reverse=(sort == "desc"),
         )
         # Convert back to dict objects
         playlists = playlists_dicts

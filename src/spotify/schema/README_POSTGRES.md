@@ -1,6 +1,7 @@
 # Spotify Data Export to PostgreSQL
 
-This guide explains how to export your Spotify data to a PostgreSQL database using the `spotify_postgres_saver.py` script.
+This guide explains how to export your Spotify data to a PostgreSQL database using the `spotify_postgres_saver.py`
+script.
 
 ## Quick Start with Setup Script
 
@@ -17,6 +18,7 @@ The easiest way to run the export is using the provided setup script:
    ```
 
 The script will:
+
 - Create and activate a virtual environment
 - Install required packages
 - Set up the Python path
@@ -25,7 +27,8 @@ The script will:
 
 ### Storing Spotify Credentials
 
-You can store your Spotify credentials in an `app_config.ini` file. The script will look for this file in the following locations (in order):
+You can store your Spotify credentials in an `app_config.ini` file. The script will look for this file in the following
+locations (in order):
 
 1. Project root directory: `app_config.ini`
 2. `src` directory: `src/app_config.ini`
@@ -33,17 +36,21 @@ You can store your Spotify credentials in an `app_config.ini` file. The script w
 4. `src/spotify/config` directory: `src/spotify/config/app_config.ini`
 
 Example `app_config.ini` file:
+
 ```ini
 SPOTIFY_CLIENT_ID=your_client_id
 SPOTIFY_CLIENT_SECRET=your_client_secret
 SPOTIFY_REDIRECT_URI=http://localhost:8888/callback
 ```
 
-The script will automatically detect and use these credentials if the file exists. If you don't have this file, the script will prompt you to enter your credentials and offer to save them to `app_config.ini` in the project root directory for future use.
+The script will automatically detect and use these credentials if the file exists. If you don't have this file, the
+script will prompt you to enter your credentials and offer to save them to `app_config.ini` in the project root
+directory for future use.
 
 ### Customizing the Script
 
 You can modify the database configuration variables at the top of the script:
+
 ```bash
 DB_HOST="localhost"
 DB_PORT="5432"
@@ -54,6 +61,7 @@ DB_SCHEMA="public"
 ```
 
 Or you can pass them as environment variables when running the script:
+
 ```bash
 DB_HOST=myhost DB_PASSWORD=mypassword ./run_postgres_export.sh
 ```
@@ -65,8 +73,9 @@ If you prefer to run the export manually, follow these steps:
 ### Prerequisites
 
 1. **PostgreSQL Database**: You need a PostgreSQL database server running. If you don't have one, you can:
-   - Install PostgreSQL locally: [PostgreSQL Downloads](https://www.postgresql.org/download/)
-   - Use a cloud service like [Supabase](https://supabase.com/), [Railway](https://railway.app/), or [Neon](https://neon.tech/)
+    - Install PostgreSQL locally: [PostgreSQL Downloads](https://www.postgresql.org/download/)
+    - Use a cloud service like [Supabase](https://supabase.com/), [Railway](https://railway.app/),
+      or [Neon](https://neon.tech/)
 
 2. **Python Dependencies**: Make sure you have the required Python packages installed:
    ```bash
@@ -81,10 +90,10 @@ If you prefer to run the export manually, follow these steps:
    ```
 
    Alternatively, you can create an `app_config.ini` file in one of the following locations:
-   - Project root directory: `app_config.ini`
-   - `src` directory: `src/app_config.ini`
-   - `src/spotify` directory: `src/spotify/app_config.ini`
-   - `src/spotify/config` directory: `src/spotify/config/app_config.ini`
+    - Project root directory: `app_config.ini`
+    - `src` directory: `src/app_config.ini`
+    - `src/spotify` directory: `src/spotify/app_config.ini`
+    - `src/spotify/config` directory: `src/spotify/config/app_config.ini`
 
    Example `app_config.ini` file:
    ```ini
@@ -141,6 +150,7 @@ python src/spotify/spotify_postgres_saver.py
 ```
 
 This will:
+
 1. Connect to a local PostgreSQL instance
 2. Create the necessary tables if they don't exist
 3. Retrieve your Spotify data using parallel processing
@@ -170,36 +180,38 @@ The PostgreSQL schema includes the following tables:
 ### Main Tables
 
 - `spot_artists`: Stores artist information
-  - Primary key: `id`
-  - Fields: name, uri, href, external_urls, images, genres, popularity, followers, spotify_url, created_at
+    - Primary key: `id`
+    - Fields: name, uri, href, external_urls, images, genres, popularity, followers, spotify_url, created_at
 
 - `spot_albums`: Stores album information
-  - Primary key: `id`
-  - Fields: name, uri, href, external_urls, images, release_date, release_date_precision, total_tracks, album_type, available_markets, spotify_url, created_at
+    - Primary key: `id`
+    - Fields: name, uri, href, external_urls, images, release_date, release_date_precision, total_tracks, album_type,
+      available_markets, spotify_url, created_at
 
 - `spot_tracks`: Stores track information
-  - Primary key: `id`
-  - Fields: name, uri, href, external_urls, duration_ms, preview_url, album_id, available_markets, isrc, spotify_url, created_at
-  - Foreign key: `album_id` references `spot_albums(id)`
+    - Primary key: `id`
+    - Fields: name, uri, href, external_urls, duration_ms, preview_url, album_id, available_markets, isrc, spotify_url,
+      created_at
+    - Foreign key: `album_id` references `spot_albums(id)`
 
 - `spot_playlists`: Stores playlist information
-  - Primary key: `id`
-  - Fields: name, uri, href, external_urls, description, images, owner, public, tracks_count, spotify_url, created_at
+    - Primary key: `id`
+    - Fields: name, uri, href, external_urls, description, images, owner, public, tracks_count, spotify_url, created_at
 
 ### Junction Tables
 
 - `spot_album_artists`: Links albums to artists
-  - Primary key: (album_id, artist_id)
-  - Foreign keys: album_id references spot_albums(id), artist_id references spot_artists(id)
+    - Primary key: (album_id, artist_id)
+    - Foreign keys: album_id references spot_albums(id), artist_id references spot_artists(id)
 
 - `spot_track_artists`: Links tracks to artists
-  - Primary key: (track_id, artist_id)
-  - Foreign keys: track_id references spot_tracks(id), artist_id references spot_artists(id)
+    - Primary key: (track_id, artist_id)
+    - Foreign keys: track_id references spot_tracks(id), artist_id references spot_artists(id)
 
 - `spot_playlist_tracks`: Links playlists to tracks
-  - Primary key: (playlist_id, track_id)
-  - Foreign keys: playlist_id references spot_playlists(id), track_id references spot_tracks(id)
-  - Additional fields: added_at, created_at
+    - Primary key: (playlist_id, track_id)
+    - Foreign keys: playlist_id references spot_playlists(id), track_id references spot_tracks(id)
+    - Additional fields: added_at, created_at
 
 ## Querying the Data
 

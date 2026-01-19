@@ -8,6 +8,7 @@ router.data = {}
 
 logger = logging.getLogger(__name__)
 
+
 @router.post("/save_data_to_mongodb", response_class=JSONResponse)
 # @router.post("/save_data_to_mongodb")
 def save_to_mongo():

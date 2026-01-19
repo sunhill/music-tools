@@ -9,12 +9,13 @@ class RateLimitInfo(BaseModel):
     reset: float
     limit: int
 
+
 class RateLimiterConfig(BaseSettings):
     redis_url: str = "redis://localhost:6379"
     redis_db: int = 0
     default_rate: int = 30  # requests per minute
-    burst_size: int = 5     # maximum burst of requests
-    retry_after: int = 30   # seconds to wait when rate limited
+    burst_size: int = 5  # maximum burst of requests
+    retry_after: int = 30  # seconds to wait when rate limited
 
 
 class RateLimiterInterface(ABC):

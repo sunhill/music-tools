@@ -121,7 +121,7 @@ class SpotifyPostgresSaver:
             # Set the schema after connection
             logger.debug(f"Setting schema to {self.schema}...")
             async with self.pool.acquire() as conn:
-                await conn.execute(f'SET search_path TO {self.schema}')
+                await conn.execute(f"SET search_path TO {self.schema}")
                 logger.info(f"Set schema to {self.schema}")
 
             # Create tables if they don't exist
@@ -499,7 +499,9 @@ class SpotifyPostgresSaver:
 
                                 if not artist_exists:
                                     if "followers" in artist:
-                                        followers_total = artist.get("followers").get("total",0)
+                                        followers_total = artist.get("followers").get(
+                                            "total", 0
+                                        )
                                     else:
                                         followers_total = 0
                                     await conn.execute(
@@ -640,38 +642,40 @@ async def save_spotify_data_to_postgres(
             logger.info("Loading data from zip files...")
             data_location = await get_data_location()
             latest_zip = get_latest_zip(data_location)
-            
+
             if not latest_zip:
-                logger.error("No zip files found. Please run the script without --use-zip-data first.")
+                logger.error(
+                    "No zip files found. Please run the script without --use-zip-data first."
+                )
                 return
-                
+
             logger.info(f"Using zip file: {latest_zip}")
             all_data = unzip_data_from_zip(latest_zip)
-            
+
             # Save artists
             if SAVED_ARTISTS in all_data:
                 logger.debug("Saving artists from zip data...")
                 await db_saver.save_artists(all_data[SAVED_ARTISTS])
                 logger.info(f"Saved {len(all_data[SAVED_ARTISTS])} artists")
-            
+
             # Save albums
             if SAVED_ALBUMS in all_data:
                 logger.debug("Saving albums from zip data...")
                 await db_saver.save_albums(all_data[SAVED_ALBUMS])
                 logger.info(f"Saved {len(all_data[SAVED_ALBUMS])} albums")
-            
+
             # Save tracks
             if SAVED_TRACKS in all_data:
                 logger.debug("Saving tracks from zip data...")
                 await db_saver.save_tracks(all_data[SAVED_TRACKS])
                 logger.info(f"Saved {len(all_data[SAVED_TRACKS])} tracks")
-            
+
             # Save playlists
             if PLAYLISTS in all_data:
                 logger.debug("Saving playlists from zip data...")
                 await db_saver.save_playlists(all_data[PLAYLISTS])
                 logger.info(f"Saved {len(all_data[PLAYLISTS])} playlists")
-            
+
             # # Save playlist tracks
             # if PLAYLIST_TRACKS in all_data:
             #     logger.debug("Saving playlist tracks from zip data...")
@@ -731,7 +735,9 @@ async def save_spotify_data_to_postgres(
             for playlist in playlists:
                 playlist_id = playlist.id
                 logger.debug(f"Fetching tracks for playlist {playlist_id}...")
-                tracks = await spotify_data_getter.get_playlist_tracks_parallel(playlist_id)
+                tracks = await spotify_data_getter.get_playlist_tracks_parallel(
+                    playlist_id
+                )
                 playlist_tracks[playlist_id] = tracks
                 logger.debug(f"Found {len(tracks)} tracks in playlist {playlist_id}")
 

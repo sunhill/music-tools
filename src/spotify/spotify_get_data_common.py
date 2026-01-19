@@ -1,4 +1,3 @@
-
 # Spotify API scopes
 SPOTIFY_SCOPES = [
     "user-library-read",
@@ -17,4 +16,3 @@ RATE_LIMITED_SLEEPING = "Rate limited, sleeping"
 SLEEP_BETWEEN_CALLS = 0.1
 RETRY_AFTER = 30
 MAX_CONCURRENT_REQUESTS = 200
-

@@ -10,7 +10,8 @@ from spotify.spotify_save import SpotifySave
 from spotify.spotify_utils import (
     setup_app_logging,
     unzip_data_from_zip,
-    most_recent_directory, get_config_location,
+    most_recent_directory,
+    get_config_location,
 )
 
 BATCH_SIZE = 500
@@ -49,9 +50,15 @@ class SpotifyToPostgres(SpotifySave):
             os.makedirs(self.playlist_location)
             logger.debug("Created Playlist Location: " + self.playlist_location)
 
-        self.individual_playlist_folder = self.config_parser["spotify"]["individual_playlist_location"]
-        self.individual_playlist_location = os.path.join(self.save_location, self.individual_playlist_folder)
-        logger.debug("Individual Playlist Location: " + self.individual_playlist_location)
+        self.individual_playlist_folder = self.config_parser["spotify"][
+            "individual_playlist_location"
+        ]
+        self.individual_playlist_location = os.path.join(
+            self.save_location, self.individual_playlist_folder
+        )
+        logger.debug(
+            "Individual Playlist Location: " + self.individual_playlist_location
+        )
         if not os.path.exists(self.individual_playlist_location):
             os.makedirs(self.individual_playlist_location)
             logger.debug(
@@ -101,17 +108,17 @@ class SpotifyToPostgres(SpotifySave):
         pass
 
     async def create_artist(
-            self,
-            pool,
-            name,
-            external_urls,
-            followers,
-            genres,
-            href,
-            images,
-            popularity,
-            type,
-            uri,
+        self,
+        pool,
+        name,
+        external_urls,
+        followers,
+        genres,
+        href,
+        images,
+        popularity,
+        type,
+        uri,
     ):
         async with pool.acquire() as conn:
             artist_id = await conn.execute(
@@ -229,16 +236,16 @@ class SpotifyToPostgres(SpotifySave):
 
     def _album_batches(self, albums):
         for i in range(0, len(albums), BATCH_SIZE):
-            yield [album for album in albums[i: i + BATCH_SIZE]]
+            yield [album for album in albums[i : i + BATCH_SIZE]]
 
     def _artist_batches(self, artists):
         for i in range(0, len(artists), BATCH_SIZE):
-            yield artists[i: i + BATCH_SIZE]
+            yield artists[i : i + BATCH_SIZE]
 
     def _track_batches(self, tracks):
         logger.debug(f"track first is {tracks[0]}")
         for i in range(0, len(tracks), BATCH_SIZE):
-            yield [track for track in tracks[i: i + BATCH_SIZE]]
+            yield [track for track in tracks[i : i + BATCH_SIZE]]
 
     async def get_pool(self):
         pool = await asyncpg.create_pool(

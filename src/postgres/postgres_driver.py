@@ -24,7 +24,7 @@ class PostgresDriver:
 
     @classmethod
     async def execute_basic_procedure(
-            cls, pool: asyncpg.Pool, procedure_name: str
+        cls, pool: asyncpg.Pool, procedure_name: str
     ) -> None:
         """Runs a procedure, passes no arguments and returns nothing"""
         async with pool.acquire() as conn:
@@ -34,7 +34,7 @@ class PostgresDriver:
 
     @classmethod
     async def execute_procedure(
-            cls, pool: asyncpg.Pool, procedure_name: str, *args
+        cls, pool: asyncpg.Pool, procedure_name: str, *args
     ) -> list[asyncpg.Record]:
         """Runs a procedure, can pass as many arguments as defined and returns the procedure's output"""
         async with pool.acquire() as conn:
@@ -53,7 +53,9 @@ class PostgresDriver:
 
     @staticmethod
     async def _get_procedures_arguments(conn, procedure_name):
-        args = await conn.fetchval("select proargtypes from pg_proc where proname=$1;", procedure_name)
+        args = await conn.fetchval(
+            "select proargtypes from pg_proc where proname=$1;", procedure_name
+        )
         return args
 
     @staticmethod

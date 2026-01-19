@@ -78,7 +78,6 @@ async def callback(request: Request):
     return {"error": "No authorization code provided"}
 
 
-
 @app.get("/test")
 def app_test():
     logger.debug("test")
