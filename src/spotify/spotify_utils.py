@@ -34,7 +34,7 @@ separator = "\t"
 logger = logging.getLogger(__name__)
 
 
-async def get_data_location():
+def get_data_location():
     config_location = get_config_location()
     logger.info(f"Using config file {config_location}")
     config_parser = ConfigParser()

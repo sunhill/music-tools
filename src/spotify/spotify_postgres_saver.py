@@ -8,6 +8,7 @@ from typing import List, Optional, Dict, Any
 import asyncpg
 import sys
 import time
+import aiofiles
 
 from spotify.spotify_utils import (
     SAVED_ARTISTS,
@@ -159,8 +160,8 @@ class SpotifyPostgresSaver:
         script_path = os.path.join(
             os.path.dirname(__file__), "schema", "create_tables.sql"
         )
-        with open(script_path, "r") as f:
-            create_tables_sql = f.read()
+        async with aiofiles.open(script_path, "r") as file:
+            create_tables_sql = await file.read()
 
         async with self.pool.acquire() as conn:
             await conn.execute(create_tables_sql)
@@ -227,7 +228,7 @@ class SpotifyPostgresSaver:
         logger.info(f"Saving {len(albums)} albums to database")
 
         # Convert to Pydantic models
-        album_models = [SpotifyAlbum(**album["album"]) for album in albums]
+        album_models = [SpotifyAlbum(**album) for album in albums]
 
         async with self.pool.acquire() as conn:
             # Use a transaction to ensure all albums are saved or none
@@ -317,7 +318,7 @@ class SpotifyPostgresSaver:
         logger.info(f"Saving {len(tracks)} tracks to database")
 
         # Convert to Pydantic models
-        track_models = [SpotifyTrack(**track["track"]) for track in tracks]
+        track_models = [SpotifyTrack(**track) for track in tracks]
 
         async with self.pool.acquire() as conn:
             # Use a transaction to ensure all tracks are saved or none
@@ -640,41 +641,45 @@ async def save_spotify_data_to_postgres(
         if use_zip_data:
             # Load data from zip files
             logger.info("Loading data from zip files...")
-            data_location = await get_data_location()
-            latest_zip = get_latest_zip(data_location)
+            data_location = get_data_location()
+            saved_artists = get_latest_zip(data_location, file_name=SAVED_ARTISTS)
+            saved_albums = get_latest_zip(data_location, file_name=SAVED_ALBUMS)
+            saved_tracks = get_latest_zip(data_location, file_name=SAVED_TRACKS)
+            playlists = get_latest_zip(data_location, file_name=PLAYLISTS)
 
-            if not latest_zip:
+            if not (saved_tracks and saved_albums and saved_artists):
                 logger.error(
                     "No zip files found. Please run the script without --use-zip-data first."
                 )
                 return
 
-            logger.info(f"Using zip file: {latest_zip}")
-            all_data = unzip_data_from_zip(latest_zip)
-
             # Save artists
-            if SAVED_ARTISTS in all_data:
+            if saved_artists:
                 logger.debug("Saving artists from zip data...")
-                await db_saver.save_artists(all_data[SAVED_ARTISTS])
-                logger.info(f"Saved {len(all_data[SAVED_ARTISTS])} artists")
+                unzipped = unzip_data_from_zip(saved_artists)
+                await db_saver.save_artists(unzipped)
+                logger.info(f"Saved {len(unzipped)} artists")
 
             # Save albums
-            if SAVED_ALBUMS in all_data:
+            if saved_albums:
                 logger.debug("Saving albums from zip data...")
-                await db_saver.save_albums(all_data[SAVED_ALBUMS])
-                logger.info(f"Saved {len(all_data[SAVED_ALBUMS])} albums")
+                unzipped = unzip_data_from_zip(saved_albums)
+                await db_saver.save_albums(unzipped)
+                logger.info(f"Saved {len(unzipped)} albums")
 
             # Save tracks
-            if SAVED_TRACKS in all_data:
+            if saved_tracks:
                 logger.debug("Saving tracks from zip data...")
-                await db_saver.save_tracks(all_data[SAVED_TRACKS])
-                logger.info(f"Saved {len(all_data[SAVED_TRACKS])} tracks")
+                unzipped = unzip_data_from_zip(saved_tracks)
+                await db_saver.save_tracks(unzipped)
+                logger.info(f"Saved {len(unzipped)} tracks")
 
             # Save playlists
-            if PLAYLISTS in all_data:
+            if playlists:
                 logger.debug("Saving playlists from zip data...")
-                await db_saver.save_playlists(all_data[PLAYLISTS])
-                logger.info(f"Saved {len(all_data[PLAYLISTS])} playlists")
+                unzipped = unzip_data_from_zip(playlists)
+                await db_saver.save_playlists(unzipped)
+                logger.info(f"Saved {len(unzipped)} playlists")
 
             # # Save playlist tracks
             # if PLAYLIST_TRACKS in all_data:

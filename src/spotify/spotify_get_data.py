@@ -501,8 +501,8 @@ class AsyncSpotifyDataGetter(BaseSpotifyDataGetter):
 
     async def _get_all_items_parallel(
         self,
-        get_func: callable,
-        process_func: callable,
+        get_func,
+        process_func,
         batch_size: int = 50,
         max_concurrent_requests: int = MAX_CONCURRENT_REQUESTS,
     ) -> List[Dict[str, Any]]:

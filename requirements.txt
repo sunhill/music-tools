@@ -1,5 +1,6 @@
 # Use pip install -r requirements.txt to install:
 asyncpg==0.30.0
+aiofiles==25.1.0
 black[d]==25.1.0
 fastapi[standard]==0.115.0
 Flask-Caching==2.0.2

@@ -8,6 +8,7 @@ description = "Export data from Spotify and other apps to various formats"
 readme = "README.md"
 requires-python = ">=3.13.0"
 dependencies = [
+    "aiofiles>=25.1.0",
     "asyncpg>=0.30.0",
     "fastapi[standard]>=0.115.0",
     "flask-caching>=2.0.2",

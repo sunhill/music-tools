@@ -55,7 +55,7 @@ class SpotifyAlbum(BaseModel):
 
     album_type: str
     artists: List[SpotifyArtist]
-    available_markets: List[str]
+    available_markets: List[str] = None
     copyrights: List[SpotifyCopyright] = []
     external_ids: SpotifyExternalIds = Field(default_factory=SpotifyExternalIds)
     external_urls: Dict[str, str]
