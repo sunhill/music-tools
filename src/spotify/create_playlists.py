@@ -18,8 +18,11 @@ def make_playlists(spotify_playlist_maker):
         num_albums=6, num_tracks_per_album=1
     )
     spotify_playlist_maker.create_playlist_from_liked_albums(
-        num_albums=6, num_tracks_per_album=None
+        num_albums=6, num_tracks_per_album=None, playlist_name="Six Pack"
     )
+    # spotify_playlist_maker.create_playlist_from_liked_albums(
+    #     num_albums=6, num_tracks_per_album=None
+    # )
     # spotify_playlist_maker.create_playlist_from_liked_albums(
     #     num_albums=None, num_tracks_per_album=None
     # )

@@ -400,6 +400,7 @@ class SpotifyPlaylistMaker:
         self,
         num_albums: Optional[int] = None,
         num_tracks_per_album: Optional[int] = None,
+        playlist_name: Optional[str] = None,
     ):
         if num_albums is None and (
             num_tracks_per_album is None or num_tracks_per_album > 1
@@ -417,8 +418,8 @@ class SpotifyPlaylistMaker:
             f"Creating playlist from {label_albums} liked albums, {label_tracks} tracks per album"
         )
 
-        playlist_name = (
-            f"{label_albums} Liked Albums - {label_tracks} track(s) from each"
+        playlist_name = self.get_album_playlist_name(
+            label_albums, label_tracks, num_albums, num_tracks_per_album, playlist_name
         )
 
         library_saved_albums = self.saved_albums
@@ -433,10 +434,40 @@ class SpotifyPlaylistMaker:
         else:
             album_track_ids = self.get_n_track_from_albums(library_saved_albums)
 
-        # album_track_ids = self.get_n_track_from_albums(library_saved_albums)
         playlist = self.get_or_create_playlist(playlist_name)
         self.remove_tracks_from_playlist(playlist)
         self.add_tracks_to_playlist(playlist, album_track_ids)
+
+    def get_album_playlist_name(
+        self,
+        label_albums: str,
+        label_tracks: str,
+        num_albums: int | None,
+        num_tracks_per_album: int | None,
+        playlist_name: str | None,
+    ) -> str:
+        if playlist_name is None:
+            if num_albums is None:
+                if num_tracks_per_album is None:
+                    logger.error("Shouldn't get here")
+                    playlist_name = (
+                        f"{label_albums} liked albums - {label_tracks} tracks from each"
+                    )
+                else:
+                    if num_tracks_per_album == 1:
+                        playlist_name = (
+                            f"{label_albums} liked albums - 1 track from each"
+                        )
+                    else:
+                        playlist_name = f"{label_albums} liked albums - {label_tracks} track from each"
+            else:
+                if num_tracks_per_album == 1:
+                    playlist_name = f"{label_albums} liked albums - 1 track from each"
+                else:
+                    playlist_name = (
+                        f"{label_albums} liked albums - {label_tracks} tracks from each"
+                    )
+        return playlist_name
 
     def create_random_playlist(
         self,
