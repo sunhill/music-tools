@@ -6,9 +6,7 @@ from typing import Optional, Any, List, Generator, Set
 
 from spotipy import Spotify
 
-from spotify.spotify_get_data_non_async import (
-    SpotifyDataGetter,
-)
+from spotify.spotify_get_data import AsyncSpotifyDataGetter
 from spotify.spotify_utils import (
     get_spotify_wrapper,
     setup_app_logging,
@@ -84,7 +82,7 @@ class SpotifyPlaylistMaker:
             self.spotify = spotify
         get_memory_usage()
 
-        self.spotify_data_getter: SpotifyDataGetter = SpotifyDataGetter(
+        self.spotify_data_getter: AsyncSpotifyDataGetter = AsyncSpotifyDataGetter(
             spotify=self.spotify
         )
         get_memory_usage()
@@ -164,6 +162,12 @@ class SpotifyPlaylistMaker:
         self.saved_albums = unzip_data_from_zip(
             get_latest_zip(raw_data_location, file_name=SAVED_ALBUMS)
         )
+        # remove "album" wrapper layer if present (items may be {"album": {...}} or already the album dict)
+        self.saved_albums = [
+            item.get("album", item) if isinstance(item, dict) else item
+            for item in self.saved_albums
+        ]
+
         # self.playlist_tracks = unzip_data_from_zip(
         # get_latest_zip(raw_data_location, file_name=PLAYLIST_TRACKS)
         # )
@@ -206,27 +210,27 @@ class SpotifyPlaylistMaker:
         logger.debug("Creating playlists from liked albums")
 
         self.create_playlist_with_tracks(
-            track_ids=self.get_one_track_from_albums(self.saved_albums),
+            track_ids=self.get_n_track_from_albums(self.saved_albums),
             playlist_name="Recordings (1 track)",
         )
         self.create_playlist_with_tracks(
-            track_ids=self.get_one_track_from_albums(self.sa_compilations),
+            track_ids=self.get_n_track_from_albums(self.sa_compilations),
             playlist_name="Single Artist Compilations (1 track)",
         )
         self.create_playlist_with_tracks(
-            track_ids=self.get_one_track_from_albums(self.va_compilations),
+            track_ids=self.get_n_track_from_albums(self.va_compilations),
             playlist_name="Various Artist Compilations (1 track)",
         )
         self.create_playlist_with_tracks(
-            track_ids=self.get_one_track_from_albums(self.singles),
+            track_ids=self.get_n_track_from_albums(self.singles),
             playlist_name="Singles and EPs (1 track)",
         )
         self.create_playlist_with_tracks(
-            track_ids=self.get_one_track_from_albums(self.albums),
+            track_ids=self.get_n_track_from_albums(self.albums),
             playlist_name="Albums (1 track)",
         )
         self.create_playlist_with_tracks(
-            track_ids=self.get_one_track_from_albums(self.not_compilations),
+            track_ids=self.get_n_track_from_albums(self.not_compilations),
             playlist_name="Albums, EPs and Singles (1 track)",
         )
 
@@ -283,7 +287,7 @@ class SpotifyPlaylistMaker:
             playlist_name = f"{search_year} Albums (1 track)"
         albums_by_year = self.get_albums_by_year(albums, search_year)
         self.create_playlist_with_tracks(
-            track_ids=self.get_one_track_from_albums(albums_by_year),
+            track_ids=self.get_n_track_from_albums(albums_by_year),
             playlist_name=f"{playlist_name}",
         )
 
@@ -291,7 +295,7 @@ class SpotifyPlaylistMaker:
         logger.debug(f"Creating playlist for {year} albums")
         filtered_albums = self.get_albums_by_year(albums, year)
         self.create_playlist_with_tracks(
-            track_ids=(self.get_one_track_from_albums(filtered_albums)),
+            track_ids=(self.get_n_track_from_albums(filtered_albums)),
             playlist_name=f"Saved {name} Albums (1 track)",
         )
 
@@ -321,13 +325,26 @@ class SpotifyPlaylistMaker:
         )
 
     @staticmethod
-    def get_one_track_from_albums(saved_albums):
+    def get_n_track_from_albums(saved_albums, num_tracks_per_album=1):
         logger.debug("Getting one track from albums")
         track_ids = []
-        for album in saved_albums:
+        for item in saved_albums:
+            album = item.get("album", item) if isinstance(item, dict) else item
             tracks = album["tracks"]["items"]
-            random_track = random.choice(tracks)
-            track_ids.append(random_track["id"])
+            k = min(num_tracks_per_album, len(tracks))
+            if k <= 0:
+                continue
+            if k >= len(tracks):
+                # take all tracks but randomize order
+                selected = tracks[:]  # shallow copy
+                # random.shuffle(selected)
+            else:
+                # sample without replacement
+                selected = random.sample(tracks, k)
+            if len(tracks) < num_tracks_per_album:
+                num_tracks_per_album = len(tracks)
+            for random_track in selected:
+                track_ids.append(random_track["id"])
         return track_ids
 
     @staticmethod
@@ -359,7 +376,7 @@ class SpotifyPlaylistMaker:
         # saved_tracks = self.spotify_data_getter.get_library_saved_tracks()
         # track_ids: List = [track["id"] for track in saved_tracks]
 
-        album_track_ids = self.get_one_track_from_albums(self.saved_albums)
+        album_track_ids = self.get_n_track_from_albums(self.saved_albums)
         track_ids: List = [track["id"] for track in self.saved_tracks]
 
         random_album_track_ids: List = self.get_random_track_selections(
@@ -381,11 +398,43 @@ class SpotifyPlaylistMaker:
 
     def create_playlist_from_liked_albums(
         self,
+        num_albums: Optional[int] = None,
+        num_tracks_per_album: Optional[int] = None,
     ):
-        logger.debug("Creating playlist from liked albums")
-        library_saved_albums = self.spotify_data_getter.get_library_saved_albums()
-        album_track_ids = self.get_one_track_from_albums(library_saved_albums)
-        playlist = self.get_or_create_playlist("Liked Albums - one track from each")
+        if num_albums is None and (
+            num_tracks_per_album is None or num_tracks_per_album > 1
+        ):
+            logger.error(
+                "Too many tracks if both num_albums and num_tracks_per_album are None/>1"
+            )
+            return
+
+        label_albums = "all" if num_albums is None else str(num_albums)
+        label_tracks = (
+            "all" if num_tracks_per_album is None else str(num_tracks_per_album)
+        )
+        logger.debug(
+            f"Creating playlist from {label_albums} liked albums, {label_tracks} tracks per album"
+        )
+
+        playlist_name = (
+            f"{label_albums} Liked Albums - {label_tracks} track(s) from each"
+        )
+
+        library_saved_albums = self.saved_albums
+        if num_albums is not None:
+            # random sample the albums to the specified number
+            library_saved_albums = random.choices(
+                list(library_saved_albums), k=num_albums
+            )
+        logger.debug(f"Creating playlist from {len(library_saved_albums)} liked albums")
+        if num_tracks_per_album is None:
+            album_track_ids = self.get_all_tracks_from_albums(library_saved_albums)
+        else:
+            album_track_ids = self.get_n_track_from_albums(library_saved_albums)
+
+        # album_track_ids = self.get_n_track_from_albums(library_saved_albums)
+        playlist = self.get_or_create_playlist(playlist_name)
         self.remove_tracks_from_playlist(playlist)
         self.add_tracks_to_playlist(playlist, album_track_ids)
 
@@ -398,7 +447,7 @@ class SpotifyPlaylistMaker:
         playlist_name="Random Playlist",
     ):
         logger.debug("Creating random playlist")
-        album_track_ids = self.get_one_track_from_albums(self.saved_albums)
+        album_track_ids = self.get_n_track_from_albums(self.saved_albums)
         # album_track_ids = self.get_all_tracks_from_albums(self.saved_albums)
         random_album_track_ids: List = self.get_random_track_selections(
             album_track_ids, int(number_of_songs * from_albums)
@@ -436,7 +485,7 @@ class SpotifyPlaylistMaker:
         year="2022",
     ):
         logger.debug("Creating random playlist for year")
-        album_track_ids = self.get_one_track_from_albums(
+        album_track_ids = self.get_n_track_from_albums(
             self.get_albums_by_year(self.saved_albums, year)
         )
         random_album_track_ids: List = self.get_random_track_selections(

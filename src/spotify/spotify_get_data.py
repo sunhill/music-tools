@@ -446,7 +446,7 @@ class AsyncSpotifyDataGetter(BaseSpotifyDataGetter):
     """Async version of SpotifyDataGetter with parallel processing capabilities."""
 
     async def _process_batch(
-        self, batch: List[Dict[str, Any]], process_func: callable
+        self, batch: List[Dict[str, Any]], process_func
     ) -> List[Dict[str, Any]]:
         """Process a batch of items in parallel using ThreadPoolExecutor."""
         logger.debug(f"Processing batch of {len(batch)} items")
