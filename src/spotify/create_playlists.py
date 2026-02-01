@@ -14,12 +14,22 @@ def main():
 
 
 def make_playlists(spotify_playlist_maker):
+    # spotify_playlist_maker.create_playlist_from_liked_albums(
+    #     num_albums=6, num_tracks_per_album=1
+    # )
+    # spotify_playlist_maker.create_playlist_from_liked_albums(
+    #     num_albums=6, num_tracks_per_album=None, playlist_name="Six Pack"
+    # )
+    albums = spotify_playlist_maker.saved_albums
+
+    albums = [album for album in albums if "1979" in album["release_date"]]
     spotify_playlist_maker.create_playlist_from_liked_albums(
-        num_albums=6, num_tracks_per_album=1
+        num_albums=6,
+        num_tracks_per_album=None,
+        playlist_name="1979 Six Pack",
+        albums=albums,
     )
-    spotify_playlist_maker.create_playlist_from_liked_albums(
-        num_albums=6, num_tracks_per_album=None, playlist_name="Six Pack"
-    )
+
     # spotify_playlist_maker.create_playlist_from_liked_albums(
     #     num_albums=6, num_tracks_per_album=None
     # )

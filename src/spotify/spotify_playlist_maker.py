@@ -401,6 +401,7 @@ class SpotifyPlaylistMaker:
         num_albums: Optional[int] = None,
         num_tracks_per_album: Optional[int] = None,
         playlist_name: Optional[str] = None,
+        albums: Optional[list] = None,
     ):
         if num_albums is None and (
             num_tracks_per_album is None or num_tracks_per_album > 1
@@ -422,17 +423,18 @@ class SpotifyPlaylistMaker:
             label_albums, label_tracks, num_albums, num_tracks_per_album, playlist_name
         )
 
-        library_saved_albums = self.saved_albums
+        if albums is None:
+            playlist_albums = self.saved_albums
+        else:
+            playlist_albums = albums
         if num_albums is not None:
             # random sample the albums to the specified number
-            library_saved_albums = random.choices(
-                list(library_saved_albums), k=num_albums
-            )
-        logger.debug(f"Creating playlist from {len(library_saved_albums)} liked albums")
+            playlist_albums = random.choices(list(playlist_albums), k=num_albums)
+        logger.debug(f"Creating playlist from {len(playlist_albums)} liked albums")
         if num_tracks_per_album is None:
-            album_track_ids = self.get_all_tracks_from_albums(library_saved_albums)
+            album_track_ids = self.get_all_tracks_from_albums(playlist_albums)
         else:
-            album_track_ids = self.get_n_track_from_albums(library_saved_albums)
+            album_track_ids = self.get_n_track_from_albums(playlist_albums)
 
         playlist = self.get_or_create_playlist(playlist_name)
         self.remove_tracks_from_playlist(playlist)
