@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 logging.getLogger("spotipy.client").setLevel(logging.CRITICAL)
 
 
-class SpotifyDataGetter:
+class NonAsyncSpotifyDataGetter:
     me: Optional[Any]
     spotify_username: str
     spotify: Spotify
@@ -502,7 +502,7 @@ class SpotifyDataGetter:
 def main():
     setup_app_logging(logger, logging.DEBUG)
 
-    spotify_data_getter: SpotifyDataGetter = SpotifyDataGetter()
+    spotify_data_getter: NonAsyncSpotifyDataGetter = NonAsyncSpotifyDataGetter()
 
     spotify_data_getter.get_all_data()
 
