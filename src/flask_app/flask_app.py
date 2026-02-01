@@ -314,7 +314,7 @@ def update_liked_album_playlists():
 )
 def update_liked_album_playlist():
     logger.debug("updating main liked album playlist")
-    app.playlist_maker.create_playlist_from_liked_albums()
+    app.playlist_maker.create_playlist_from_albums()
     logger.debug("updated main liked album playlist")
     return redirect(url_for("index"))
 

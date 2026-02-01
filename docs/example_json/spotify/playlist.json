@@ -1,0 +1,46 @@
+{
+  "collaborative": false,
+  "description": "",
+  "external_urls": {
+    "spotify": "https://open.spotify.com/playlist/6Bs17BP269Z42Vdl2WNKI8"
+  },
+  "href": "https://api.spotify.com/v1/playlists/6Bs17BP269Z42Vdl2WNKI8",
+  "id": "6Bs17BP269Z42Vdl2WNKI8",
+  "images": [
+    {
+      "height": 640,
+      "url": "https://mosaic.scdn.co/640/ab67616d0000b27313be1351b3afc46829c274a8ab67616d0000b2734107028727edbc8ac51a5542ab67616d0000b2736de5519250f8e0e17a937f7fab67616d0000b273ae6d8e36136353d550b2587d",
+      "width": 640
+    },
+    {
+      "height": 300,
+      "url": "https://mosaic.scdn.co/300/ab67616d0000b27313be1351b3afc46829c274a8ab67616d0000b2734107028727edbc8ac51a5542ab67616d0000b2736de5519250f8e0e17a937f7fab67616d0000b273ae6d8e36136353d550b2587d",
+      "width": 300
+    },
+    {
+      "height": 60,
+      "url": "https://mosaic.scdn.co/60/ab67616d0000b27313be1351b3afc46829c274a8ab67616d0000b2734107028727edbc8ac51a5542ab67616d0000b2736de5519250f8e0e17a937f7fab67616d0000b273ae6d8e36136353d550b2587d",
+      "width": 60
+    }
+  ],
+  "name": "Walking",
+  "owner": {
+    "display_name": "diamondbeagle",
+    "external_urls": {
+      "spotify": "https://open.spotify.com/user/diamondbeagle"
+    },
+    "href": "https://api.spotify.com/v1/users/diamondbeagle",
+    "id": "diamondbeagle",
+    "type": "user",
+    "uri": "spotify:user:diamondbeagle"
+  },
+  "primary_color": null,
+  "public": false,
+  "snapshot_id": "NDk5LDg4ZWU0MTZlNjEwMzUxNmIyNWY5MTA2ODc4ZTc4OGNmNmY3NDU5Y2U=",
+  "tracks": {
+    "href": "https://api.spotify.com/v1/playlists/6Bs17BP269Z42Vdl2WNKI8/tracks",
+    "total": 57
+  },
+  "type": "playlist",
+  "uri": "spotify:playlist:6Bs17BP269Z42Vdl2WNKI8"
+}

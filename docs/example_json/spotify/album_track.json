@@ -1,0 +1,38 @@
+{
+  "artists": [
+    {
+      "external_urls": {
+        "spotify": "https://open.spotify.com/artist/6Mo9PoU6svvhgEum7wh2Nd"
+      },
+      "href": "https://api.spotify.com/v1/artists/6Mo9PoU6svvhgEum7wh2Nd",
+      "id": "6Mo9PoU6svvhgEum7wh2Nd",
+      "name": "Public Enemy",
+      "type": "artist",
+      "uri": "spotify:artist:6Mo9PoU6svvhgEum7wh2Nd"
+    }
+  ],
+  "available_markets": [],
+  "disc_number": 1,
+  "duration_ms": 100533,
+  "explicit": true,
+  "external_urls": {
+    "spotify": "https://open.spotify.com/track/48vNAy7OBkQMflPODOzLF7"
+  },
+  "href": "https://api.spotify.com/v1/tracks/2oarlR10iB6zYUu8k4XoNp",
+  "id": "2oarlR10iB6zYUu8k4XoNp",
+  "linked_from": {
+    "external_urls": {
+      "spotify": "https://open.spotify.com/track/48vNAy7OBkQMflPODOzLF7"
+    },
+    "href": "https://api.spotify.com/v1/tracks/48vNAy7OBkQMflPODOzLF7",
+    "id": "48vNAy7OBkQMflPODOzLF7",
+    "type": "track",
+    "uri": "spotify:track:48vNAy7OBkQMflPODOzLF7"
+  },
+  "name": "Countdown To Armageddon",
+  "preview_url": "https://p.scdn.co/mp3-preview/95dc031a2edfa56bf13a4f2d822741543301bef8?cid=35d5dbd830484c309b351f0baea0197f",
+  "track_number": 1,
+  "type": "track",
+  "uri": "spotify:track:2oarlR10iB6zYUu8k4XoNp",
+  "is_local": false
+}
