@@ -14,35 +14,45 @@ def main():
 
 
 def make_playlists(spotify_playlist_maker):
-    # spotify_playlist_maker.create_playlist_from_liked_albums(
+    # spotify_playlist_maker.create_playlist_from_albums(
     #     num_albums=6, num_tracks_per_album=1
     # )
-    # spotify_playlist_maker.create_playlist_from_liked_albums(
+    # spotify_playlist_maker.create_playlist_from_albums(
     #     num_albums=6, num_tracks_per_album=None, playlist_name="Six Pack"
     # )
     albums = spotify_playlist_maker.saved_albums
 
-    albums = [album for album in albums if "1979" in album["release_date"]]
-    spotify_playlist_maker.create_playlist_from_liked_albums(
+    # spotify_playlist_maker.create_playlist_from_albums(
+    #     num_albums=6,
+    #     num_tracks_per_album=None,
+    #     playlist_name="1979 Six Pack",
+    #     albums=[album for album in albums if "1979" in album["release_date"]],
+    # )
+
+    spotify_playlist_maker.create_playlist_from_albums(
         num_albums=6,
         num_tracks_per_album=None,
-        playlist_name="1979 Six Pack",
-        albums=albums,
+        playlist_name="1970s Album Six Pack",
+        albums=[
+            album
+            for album in albums
+            if "197" in album["release_date"] and album["type"] == "album"
+        ],
     )
 
-    # spotify_playlist_maker.create_playlist_from_liked_albums(
+    # spotify_playlist_maker.create_playlist_from_albums(
     #     num_albums=6, num_tracks_per_album=None
     # )
-    # spotify_playlist_maker.create_playlist_from_liked_albums(
+    # spotify_playlist_maker.create_playlist_from_albums(
     #     num_albums=None, num_tracks_per_album=None
     # )
-    # spotify_playlist_maker.create_playlist_from_liked_albums(
+    # spotify_playlist_maker.create_playlist_from_albums(
     #     num_albums=None, num_tracks_per_album=2
     # )
-    # spotify_playlist_maker.create_playlist_from_liked_albums(
+    # spotify_playlist_maker.create_playlist_from_albums(
     #     num_albums=None, num_tracks_per_album=1
     # )
-    # spotify_playlist_maker.create_playlist_from_liked_albums(
+    # spotify_playlist_maker.create_playlist_from_albums(
     #     num_albums=None, num_tracks_per_album=2
     # )
 
@@ -98,7 +108,7 @@ def make_playlists(spotify_playlist_maker):
     # spotify_playlist_maker.create_playlists_by_decade(
     #     spotify_playlist_maker.saved_tracks, start_year=194, end_year=202
     # )
-    # spotify_playlist_maker.create_playlist_from_liked_albums()
+    # spotify_playlist_maker.create_playlist_from_albums()
     # spotify_playlist_maker.create_random_playlist(
     #     number_of_songs=1000, from_albums=0.4, from_tracks=0.4, from_playlists=0.2
     # )

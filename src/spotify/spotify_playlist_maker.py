@@ -396,7 +396,7 @@ class SpotifyPlaylistMaker:
     Create a playlist from all liked albums, with one track from each album
     """
 
-    def create_playlist_from_liked_albums(
+    def create_playlist_from_albums(
         self,
         num_albums: Optional[int] = None,
         num_tracks_per_album: Optional[int] = None,
@@ -449,26 +449,10 @@ class SpotifyPlaylistMaker:
         playlist_name: str | None,
     ) -> str:
         if playlist_name is None:
-            if num_albums is None:
-                if num_tracks_per_album is None:
-                    logger.error("Shouldn't get here")
-                    playlist_name = (
-                        f"{label_albums} liked albums - {label_tracks} tracks from each"
-                    )
-                else:
-                    if num_tracks_per_album == 1:
-                        playlist_name = (
-                            f"{label_albums} liked albums - 1 track from each"
-                        )
-                    else:
-                        playlist_name = f"{label_albums} liked albums - {label_tracks} track from each"
-            else:
-                if num_tracks_per_album == 1:
-                    playlist_name = f"{label_albums} liked albums - 1 track from each"
-                else:
-                    playlist_name = (
-                        f"{label_albums} liked albums - {label_tracks} tracks from each"
-                    )
+            album_noun = "album" if num_albums == 1 else "albums"
+            track_word = "track" if num_tracks_per_album == 1 else "tracks"
+            playlist_name = f"{label_albums} liked {album_noun} - {label_tracks} {track_word} from each"
+
         return playlist_name
 
     def create_random_playlist(
@@ -481,7 +465,6 @@ class SpotifyPlaylistMaker:
     ):
         logger.debug("Creating random playlist")
         album_track_ids = self.get_n_track_from_albums(self.saved_albums)
-        # album_track_ids = self.get_all_tracks_from_albums(self.saved_albums)
         random_album_track_ids: List = self.get_random_track_selections(
             album_track_ids, int(number_of_songs * from_albums)
         )
