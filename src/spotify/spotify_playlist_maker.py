@@ -1,6 +1,7 @@
 import logging
 import os
 import random
+import re
 from configparser import ConfigParser
 from typing import Optional, Any, List, Generator, Set
 
@@ -150,9 +151,9 @@ class SpotifyPlaylistMaker:
         self.saved_tracks = unzip_data_from_zip(
             get_latest_zip(raw_data_location, file_name=SAVED_TRACKS)
         )
-        # self.saved_album_tracks = unzip_data_from_zip(
-        #     get_latest_zip(raw_data_location, file_name=SAVED_ALBUM_TRACKS)
-        # )
+        self.saved_album_tracks = unzip_data_from_zip(
+            get_latest_zip(raw_data_location, file_name=SAVED_ALBUM_TRACKS)
+        )
         self.saved_artists = unzip_data_from_zip(
             get_latest_zip(raw_data_location, file_name=SAVED_ARTISTS)
         )
@@ -576,6 +577,10 @@ class SpotifyPlaylistMaker:
         )
         filtered_tracks = self.filter_tracks_by_search_term_any(tracks, search_terms)
         track_ids: List = [track["id"] for track in filtered_tracks]
+        print(f"Found {len(track_ids)} tracks for search terms {search_terms}")
+        # dedupe track_ids
+        track_ids = list(set(track_ids))
+        print(f"{len(track_ids)} unique tracks for search terms {search_terms}")
         self.create_playlist_with_tracks(
             track_ids=track_ids, playlist_name=playlist_name
         )
@@ -617,16 +622,28 @@ class SpotifyPlaylistMaker:
     @staticmethod
     def filter_tracks_by_search_term_any(tracks, search_terms: list):
         logger.debug(f"Filtering {len(tracks)} tracks by search term {search_terms}")
-        filtered_tracks: List = list(
-            filter(
-                lambda track: any(
-                    search_term.lower() == word.lower()
-                    for search_term in search_terms
-                    for word in track["name"].lower().split()
-                ),
-                tracks,
-            )
-        )
+
+        # filtered_tracks: List = list(
+        #     filter(
+        #         lambda track: any(
+        #             search_term.lower() == word.lower()
+        #             for search_term in search_terms
+        #             for word in track["name"].lower().split()
+        #         ),
+        #         tracks,
+        #     )
+        # )
+        # extract whole words (keeps apostrophes inside words, ignores punctuation like '?')
+
+        word_re = re.compile(r"\b[\w']+\b", flags=re.UNICODE)
+        lowered_terms = {t.casefold() for t in search_terms}
+
+        filtered_tracks: List = []
+        for track in tracks:
+            name = track.get("name", "") or ""
+            words = set(word_re.findall(name.casefold()))
+            if any(term in words for term in lowered_terms):
+                filtered_tracks.append(track)
 
         return filtered_tracks
 
