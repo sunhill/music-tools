@@ -52,3 +52,11 @@ spotify-save-to-postgres = "storage.postgres.spotify_save_to_postgres:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.black]
+line-length = 88
+target-version = ["py313"]
+include = '\.pyi?$'
+exclude = '''
+/(\.git|\.hg|\.mypy_cache|\.tox|\.venv|venv|\.eggs|build|dist|\.venv|\.idea|node_modules)/
+'''
