@@ -2,6 +2,8 @@ import datetime
 import logging
 import os
 from typing import List, Dict
+import frontmatter
+import re
 
 from spotify.spotify_save import SpotifySave
 from spotify.spotify_utils import (
@@ -13,6 +15,23 @@ from spotify.spotify_utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def get_safe_filename(name: str) -> str:
+    """Return a filename-safe string for macOS (APFS).
+
+    Replaces path separators and null bytes, strips control characters,
+    avoids special names, and truncates to 255 characters.
+    """
+    if not isinstance(name, str):
+        name = str(name or "")
+    # replace nulls and path separators with underscore
+    safe_name = re.sub(r"[\x00/]+", "_", name)
+    # remove other non-printable/control characters
+    safe_name = re.sub(r"[\x00-\x1f\x7f]+", "", safe_name).strip()
+    if not safe_name or safe_name in (".", ".."):
+        safe_name = "unnamed"
+    return safe_name[:255]
 
 
 
@@ -67,49 +86,77 @@ class SpotifyToMarkdown(SpotifySave):
         pass
 
     def save_artists(self, artists: List[Dict]):
-        # Create one markdown file per artist with basic metadata
+        # Create one markdown file per artist with basic metadata using python-frontmatter
         for a in artists:
             name = a.get("name", "unnamed")
             artist_id = a.get("id", "")
             uri = a.get("uri", "")
             followers = a.get("followers", "")
             popularity = a.get("popularity", "")
-            genres = ", ".join(a.get("genres", []))
+            genres_list = a.get("genres", []) or []
             image_url = ""
             imgs = a.get("images", [])
             if imgs and len(imgs) > 0 and isinstance(imgs[0], dict):
                 image_url = imgs[0].get("url", "")
 
-            # Build YAML front matter with genres as a list
-            genres_list = a.get("genres", []) or []
-            md_lines = []
-            md_lines.append("---")
-            # Quote strings to be safe in YAML
-            md_lines.append(f"name: \"{name}\"")
-            md_lines.append(f"id: \"{artist_id}\"")
-            md_lines.append(f"uri: \"{uri}\"")
-            md_lines.append(f"followers: {followers}")
-            md_lines.append(f"popularity: {popularity}")
-            md_lines.append("genres:")
-            for g in genres_list:
-                md_lines.append(f"  - \"{g}\"")
-            md_lines.append("---")
-
-            # Name should be displayed first after the front matter
-            md_lines.append("")
-            md_lines.append(f"# {name}")
-
-            # Image should be displayed outside front matter for Obsidian (after the name)
-            if image_url:
-                md_lines.append("")
-                md_lines.append(f"![300]({image_url})")
-
-
-            # sanitize filename: keep alnum, space and dash; replace others with '_'
-            safe_name = "".join(ch if ch.isalnum() or ch in (" ", "-") else "_" for ch in name).strip()
-            safe_name = safe_name[:120]
+            # sanitize filename for macOS using helper
+            safe_name = get_safe_filename(name)
             filename = f"{safe_name}.md"
-            self._write(filename, "\n".join(md_lines))
+            path = os.path.join(self.save_dir, filename)
+
+            # Load existing post if present
+            if os.path.exists(path):
+                try:
+                    post = frontmatter.load(path)
+                except Exception:
+                    # on any read/parse error, start fresh
+                    post = frontmatter.Post("")
+            else:
+                post = frontmatter.Post("")
+
+            # Ensure metadata fields exist (do not overwrite existing values)
+            meta = post.metadata
+            if "name" not in meta:
+                meta["name"] = name
+            if "id" not in meta:
+                meta["id"] = artist_id
+            if "uri" not in meta:
+                meta["uri"] = uri
+            if "followers" not in meta:
+                meta["followers"] = followers
+            if "popularity" not in meta:
+                meta["popularity"] = popularity
+            if "genres" not in meta:
+                # ensure genres is a list
+                meta["genres"] = list(genres_list)
+
+            # Build content: name heading first, then optional image (avoid duplicate), then existing body
+            existing_body = (post.content or "").lstrip()
+            # remove existing top-level heading if it matches name to avoid duplicate headings
+            if existing_body.startswith("# "):
+                # drop first line
+                existing_body = "\n".join(existing_body.splitlines()[1:]).lstrip()
+
+            new_body_parts = [f"# {name}"]
+            if image_url and image_url not in existing_body:
+                new_body_parts.append("")
+                new_body_parts.append(f"![300]({image_url})")
+
+            if existing_body:
+                new_body_parts.append("")
+                new_body_parts.append(existing_body)
+
+            post.content = "\n".join(new_body_parts)
+
+            # Write back using frontmatter.dump
+            try:
+                with open(path, "w", encoding="utf-8") as fh:
+                    fh.write(frontmatter.dumps(post))
+            except Exception:
+                # fallback: write minimal markdown
+                fallback = "---\n" + "\n".join(f"{k}: {v}" for k, v in post.metadata.items()) + "\n---\n\n" + post.content
+                with open(path, "w", encoding="utf-8") as fh:
+                    fh.write(fallback)
 
     def save_individual_playlists(self, playlists: List[Dict], playlist_tracks: Dict):
         pass
