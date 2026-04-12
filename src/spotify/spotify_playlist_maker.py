@@ -623,26 +623,38 @@ class SpotifyPlaylistMaker:
     def filter_tracks_by_search_term_any(tracks, search_terms: list):
         logger.debug(f"Filtering {len(tracks)} tracks by search term {search_terms}")
 
-        # filtered_tracks: List = list(
-        #     filter(
-        #         lambda track: any(
-        #             search_term.lower() == word.lower()
-        #             for search_term in search_terms
-        #             for word in track["name"].lower().split()
-        #         ),
-        #         tracks,
-        #     )
-        # )
-        # extract whole words (keeps apostrophes inside words, ignores punctuation like '?')
-
+        # token regex that keeps apostrophes inside words (like "don't")
         word_re = re.compile(r"\b[\w']+\b", flags=re.UNICODE)
-        lowered_terms = {t.casefold() for t in search_terms}
+
+        # prepare search terms (casefolded) and precompile regexes
+        lowered_terms = [t.casefold() for t in search_terms if t]
+        term_regexes = [
+            re.compile(rf"\b{re.escape(term)}\b", flags=re.UNICODE)
+            for term in lowered_terms
+        ]
 
         filtered_tracks: List = []
         for track in tracks:
             name = track.get("name", "") or ""
-            words = set(word_re.findall(name.casefold()))
-            if any(term in words for term in lowered_terms):
+            name_cf = name.casefold()
+
+            # fast token set for single-word matches (keeps apostrophes)
+            tokens = set(word_re.findall(name_cf))
+
+            matched = False
+            for term, regex in zip(lowered_terms, term_regexes):
+                if " " not in term:
+                    # single-word: check the token set
+                    if term in tokens:
+                        matched = True
+                        break
+                else:
+                    # phrase: use regex search against the casefolded name (whole-phrase match)
+                    if regex.search(name_cf):
+                        matched = True
+                        break
+
+            if matched:
                 filtered_tracks.append(track)
 
         return filtered_tracks
