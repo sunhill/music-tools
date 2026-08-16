@@ -22,6 +22,7 @@ def make_playlists(spotify_playlist_maker):
         )
         or spotify_playlist_maker.saved_tracks
     )
+    tracks = tracks_including_album_tracks
     # spotify_playlist_maker.create_playlist_from_albums(
     #     num_albums=6, num_tracks_per_album=1
     # )
@@ -29,12 +30,12 @@ def make_playlists(spotify_playlist_maker):
     #     num_albums=6, num_tracks_per_album=None, playlist_name="Six Pack"
     # )
 
-    spotify_playlist_maker.create_playlist_from_albums(
-        num_albums=10,
-        num_tracks_per_album=None,
-        playlist_name="1970s 10 Album Pack",
-        albums=[album for album in albums if "197" in album["release_date"]],
-    )
+    # spotify_playlist_maker.create_playlist_from_albums(
+    #     num_albums=8,
+    #     num_tracks_per_album=None,
+    #     playlist_name="1990s Six Pack",
+    #     albums=[album for album in albums if "199" in album["release_date"]],
+    # )
 
     # spotify_playlist_maker.create_playlist_from_albums(
     #     num_albums=6,
@@ -85,12 +86,12 @@ def make_playlists(spotify_playlist_maker):
 
     # playlist_from_search_terms(spotify_playlist_maker, theme="colours", playlist_name="Colours", )
     # python
-    tracks = (
-        spotify_playlist_maker.saved_tracks.extend(
-            spotify_playlist_maker.saved_album_tracks
-        )
-        or spotify_playlist_maker.saved_tracks
-    )
+    # tracks = (
+    #     spotify_playlist_maker.saved_tracks.extend(
+    #         spotify_playlist_maker.saved_album_tracks
+    #     )
+    #     or spotify_playlist_maker.saved_tracks
+    # )
 
     # playlist_from_search_terms(
     #     spotify_playlist_maker, theme="planets", playlist_name="Planets", tracks=tracks
@@ -104,10 +105,19 @@ def make_playlists(spotify_playlist_maker):
     #     terms=["London", "New York", "Tokyo", "Paris", "Berlin", "Sydney"],
     # )
     # playlist_from_search_terms(
+    #     spotify_playlist_maker, theme="weather", playlist_name="Weather2", tracks=tracks
+    # )
+    # playlist_from_search_terms(
     #     spotify_playlist_maker,
-    #     theme="cities",
-    #     playlist_name="Cities",
-    #     tracks=tracks
+    #     theme="natural_disaster",
+    #     playlist_name="Natural Disaster",
+    #     tracks=tracks,
+    # )
+    # playlist_from_search_terms(
+    #     spotify_playlist_maker,
+    #     theme="desserts",
+    #     playlist_name="Sweet Stuff",
+    #     tracks=tracks,
     # )
 
     # spotify_playlist_maker.make_playlists_private(playlists)
@@ -116,17 +126,17 @@ def make_playlists(spotify_playlist_maker):
     #     sort_by="length",
     #     playlist_prefix="Liked ",
     # )
-    # spotify_playlist_maker.create_playlists_by_year(
-    #     tracks=spotify_playlist_maker.saved_tracks,
-    #     start_year=2010,
-    #     end_year=2017,
-    #     playlist_prefix="Liked",
-    # spotify_playlist_maker.create_playlists_by_decade(
-    #     tracks=spotify_playlist_maker.saved_tracks,
-    #     start_year=193,
-    #     end_year=202,
-    #     playlist_prefix="Liked",
-    # )
+    spotify_playlist_maker.create_playlists_by_year(
+        tracks=spotify_playlist_maker.saved_tracks,
+        start_year=2024,
+        end_year=2026,
+        playlist_prefix="Liked",
+        # spotify_playlist_maker.create_playlists_by_decade(
+        #     tracks=spotify_playlist_maker.saved_tracks,
+        #     start_year=193,
+        #     end_year=202,
+        #     playlist_prefix="Liked",
+    )
 
     # )
     # spotify_playlist_maker.create_playlists_by_search_term(queries=["label:4ad"],playlist_name="search_1")

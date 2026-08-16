@@ -608,12 +608,51 @@ class SpotifyPlaylistMaker:
     @staticmethod
     def filter_tracks_by_year(tracks, year):
         logger.debug(f"Filtering {len(tracks)} tracks by year {year}")
-        filtered_tracks: List = list(
-            filter(
-                lambda track: str(track["album"]["release_date"]).startswith(year),
-                tracks,
-            )
-        )
+
+        def _get_release_date(track_item) -> Optional[str]:
+            """
+            Resolve possible locations for an album release_date on a track item.
+            Track items in this codebase can be in different shapes:
+            - plain track dict with an 'album' dict: { 'album': { 'release_date': ... }, ... }
+            - wrapped as a playlist item: { 'track': { 'album': { 'release_date': ... }, ... } }
+            Return the release_date string if found or None.
+            """
+            if not isinstance(track_item, dict):
+                return None
+            # direct album
+            album = track_item.get("album")
+            if isinstance(album, dict) and "release_date" in album:
+                return album.get("release_date")
+
+            # wrapped track object (e.g. playlist items)
+            inner = track_item.get("track")
+            if isinstance(inner, dict):
+                album = inner.get("album")
+                if isinstance(album, dict) and "release_date" in album:
+                    return album.get("release_date")
+
+            return None
+
+        filtered_tracks: List = []
+
+        if year.lower() == OLD:
+            for track in tracks:
+                rd = _get_release_date(track)
+                if not rd:
+                    continue
+                try:
+                    # take first three characters as in the original album logic
+                    if int(str(rd)[0:3]) <= 193:
+                        filtered_tracks.append(track)
+                except Exception:
+                    # ignore malformed dates
+                    continue
+        else:
+            for track in tracks:
+                rd = _get_release_date(track)
+                if rd and str(rd).startswith(year):
+                    filtered_tracks.append(track)
+
         return filtered_tracks
 
     """
