@@ -28,7 +28,7 @@ class Image(BaseModel):
 class BasicArtist(BaseModel):
     _external_urls: dict
     _href: str
-    _id: str
+    id: str
     name: str
     _type: str
     _uri: str
@@ -36,10 +36,10 @@ class BasicArtist(BaseModel):
 
 class Artist(BasicArtist):
     _external_urls: dict
-    _followers: dict
+    followers: dict
     genres: List[str]
     _href: str
-    _id: str
+    id: str
     images: List[Image]
     name: str
     _popularity: int
@@ -63,23 +63,25 @@ class Artist(BasicArtist):
 
 
 class Track(BaseModel):
-    _album: dict
+    album: dict | None = None
+    album_id: str | None = None
     artists: List[BasicArtist]
-    _available_markets: List[str]
-    _disc_number: int
+    _available_markets: List[str] | None = None
+    disc_number: int
     duration_ms: int
-    _explicit: bool
-    _external_ids: dict
-    _external_urls: dict
-    _href: str
-    _id: str
+    explicit: bool
+    external_ids: dict | None = None
+    external_urls: dict | None = None
+    href: str
+    id: str
+    images: List[Image] | None = None
     _is_local: bool
     name: str
-    _popularity: int
-    _preview_url: str
-    _track_number: int
-    _type: str
-    _uri: str
+    _popularity: int | None = None
+    preview_url: str | None
+    track_number: int
+    type: str | None = None
+    uri: str
 
     @computed_field()
     @property
@@ -93,10 +95,10 @@ class Album(BaseModel):
     _available_markets: List[str]
     _copyrights: List[dict]
     _external_ids: dict
-    _external_urls: dict
+    external_urls: dict
     _genres: List[str]
-    _href: str
-    _id: str
+    href: str
+    id: str
     images: List[Image]
     label: str
     name: str
@@ -104,7 +106,7 @@ class Album(BaseModel):
     release_date: str
     release_date_precision: str
     total_tracks: int
-    _tracks: List[Track]
+    tracks: List[Track] | None = None
     _type: str
     _uri: str
 
@@ -136,18 +138,18 @@ class Album(BaseModel):
 class Playlist(BaseModel):
     collaborative: bool
     description: str
-    _external_urls: dict
-    _href: str
+    external_urls: dict
+    href: str
     id: str
-    _images: List[Image]
+    images: List[Image]
     name: str
-    _owner: dict
+    owner: dict
     _primary_color: str
     public: bool
     _snapshot_id: str
-    _tracks: dict
-    _type: str
-    _uri: str
+    tracks: dict
+    type: str
+    uri: str
 
 
 class PlaylistRequest(BaseModel):
