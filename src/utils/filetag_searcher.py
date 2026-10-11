@@ -1,3 +1,4 @@
+import shlex
 import sqlite3
 from pathlib import Path
 
@@ -148,6 +149,9 @@ class MediaTagSearcher:
 
     def search(self, query_tag, query_value=None):
         """Search tags with optional * (any length) and ? (single character) wildcards."""
+        if query_value is None:
+            return self.search_query(query_tag)
+
         query_tag = query_tag.strip().lower()
         where_clauses = []
         parameters = []
@@ -158,15 +162,14 @@ class MediaTagSearcher:
             where_clauses.append("tag = ?")
             parameters.append(query_tag)
 
-        if query_value is not None:
-            query_value = query_value.strip().lower()
-            if "*" in query_value or "?" in query_value:
-                where_clauses.append("value LIKE ? ESCAPE '!'")
-                parameters.append(self._to_like_pattern(query_value))
-            else:
-                where_clauses.append("value = ?")
-                parameters.append(query_value)
-            where_clauses.append("is_key_value = 1")
+        query_value = query_value.strip().lower()
+        if "*" in query_value or "?" in query_value:
+            where_clauses.append("value LIKE ? ESCAPE '!'")
+            parameters.append(self._to_like_pattern(query_value))
+        else:
+            where_clauses.append("value = ?")
+            parameters.append(query_value)
+        where_clauses.append("is_key_value = 1")
 
         rows = self.connection.execute(
             f"""
@@ -175,6 +178,155 @@ class MediaTagSearcher:
             WHERE {" AND ".join(where_clauses)}
             ORDER BY media_path
             """,
+            parameters,
+        )
+        return [self.directory / row[0] for row in rows]
+
+    def search_query(self, expression):
+        """Search a boolean expression of tags, tag:value terms, and parentheses.
+
+        AND binds more tightly than OR; NOT is unary. Adjacent terms imply AND.
+        """
+        lexer = shlex.shlex(expression, posix=True, punctuation_chars="()")
+        lexer.whitespace_split = True
+        tokens = list(lexer)
+        if not tokens:
+            raise ValueError("Search query cannot be empty")
+
+        position = 0
+
+        def parse_or():
+            nonlocal position
+            node = parse_and()
+            while position < len(tokens) and tokens[position].upper() == "OR":
+                position += 1
+                node = ("or", node, parse_and())
+            return node
+
+        def parse_and():
+            nonlocal position
+            node = parse_not()
+            while position < len(tokens):
+                token = tokens[position]
+                if token.upper() == "AND":
+                    position += 1
+                    node = ("and", node, parse_not())
+                elif token.upper() == "OR" or token == ")":
+                    break
+                elif (
+                    token.upper() == "NOT"
+                    or token == "("
+                    or token.upper()
+                    not in (
+                        "AND",
+                        "OR",
+                    )
+                ):
+                    node = ("and", node, parse_not())
+                else:
+                    break
+            return node
+
+        def parse_not():
+            nonlocal position
+            if position < len(tokens) and tokens[position].upper() == "NOT":
+                position += 1
+                return ("not", parse_not())
+            return parse_primary()
+
+        def parse_primary():
+            nonlocal position
+            if position >= len(tokens):
+                raise ValueError("Expected a tag term in search query")
+
+            token = tokens[position]
+            if token == "(":
+                position += 1
+                node = parse_or()
+                if position >= len(tokens) or tokens[position] != ")":
+                    raise ValueError("Missing closing parenthesis in search query")
+                position += 1
+                return node
+            if token == ")" or token.upper() in ("AND", "OR", "NOT"):
+                raise ValueError(f"Expected a tag term, got {token!r}")
+
+            position += 1
+            if ":" in token:
+                tag, value = token.split(":", 1)
+                if not tag:
+                    raise ValueError("Tag name cannot be empty")
+                return ("term", tag, value)
+            return ("term", token, None)
+
+        ast = parse_or()
+        if position != len(tokens):
+            raise ValueError(f"Unexpected token in search query: {tokens[position]!r}")
+
+        ctes = []
+        parameters = []
+        cte_number = 0
+
+        def compile_node(node):
+            nonlocal cte_number
+            operator = node[0]
+            if operator == "term":
+                _, tag, value = node
+                tag = tag.strip().lower()
+                if not tag:
+                    raise ValueError("Tag name cannot be empty")
+                conditions = []
+                if "*" in tag or "?" in tag:
+                    conditions.append("tags.tag LIKE ? ESCAPE '!'")
+                    parameters.append(self._to_like_pattern(tag))
+                else:
+                    conditions.append("tags.tag = ?")
+                    parameters.append(tag)
+
+                if value is not None:
+                    value = value.strip().lower()
+                    if "*" in value or "?" in value:
+                        conditions.append("tags.value LIKE ? ESCAPE '!'")
+                        parameters.append(self._to_like_pattern(value))
+                    else:
+                        conditions.append("tags.value = ?")
+                        parameters.append(value)
+                    conditions.append("tags.is_key_value = 1")
+
+                name = f"q{cte_number}"
+                cte_number += 1
+                ctes.append(f"""{name} AS (
+                        SELECT DISTINCT media_files.media_path
+                        FROM tags JOIN media_files USING (txt_path)
+                        WHERE {" AND ".join(conditions)}
+                    )""")
+                return name
+
+            if operator == "not":
+                child = compile_node(node[1])
+                name = f"q{cte_number}"
+                cte_number += 1
+                ctes.append(f"""{name} AS (
+                        SELECT media_path FROM media_files
+                        EXCEPT SELECT media_path FROM {child}
+                    )""")
+                return name
+
+            left = compile_node(node[1])
+            right = compile_node(node[2])
+            name = f"q{cte_number}"
+            cte_number += 1
+            sql_operator = "INTERSECT" if operator == "and" else "UNION"
+            ctes.append(f"""{name} AS (
+                    SELECT media_path FROM {left}
+                    {sql_operator}
+                    SELECT media_path FROM {right}
+                )""")
+            return name
+
+        result_cte = compile_node(ast)
+        rows = self.connection.execute(
+            f"WITH {', '.join(ctes)} "
+            f"SELECT media_path FROM {result_cte} ORDER BY media_path",
             parameters,
         )
         return [self.directory / row[0] for row in rows]
@@ -235,5 +387,11 @@ if __name__ == "__main__":
     # media_dir = "./my_media_collection"
     media_dir = "/Users/simon/Downloads/hydrex"
     with MediaTagSearcher(media_dir) as searcher:
-        for match in searcher.search("character", "superman"):
+        # for match in searcher.search("character", "superman"):
+        #     print(searcher.format_result(match))
+        for match in searcher.search('character:"judge dredd" OR character:batman'):
+            print(searcher.format_result(match))
+        # for match in searcher.search('character:"judge dredd"'):
+        #     print(searcher.format_result(match))
+        for match in searcher.search('character:"judge dredd" OR character:batman'):
             print(searcher.format_result(match))
