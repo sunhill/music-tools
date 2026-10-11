@@ -15,6 +15,7 @@ from spotify.spotify_utils import (
     most_recent_directory,
     unzip_data_from_zip,
     get_config_location,
+    PLAYLIST_TRACKS,
 )
 
 XLSX = ".xlsx"
@@ -84,6 +85,43 @@ class SpotifyToFile(SpotifySave):
                 "Created Individual Playlist Location: "
                 + self.individual_playlist_location
             )
+        self.playlist_markdown_filename_pattern = self.config_parser.get(
+            "spotify",
+            "playlist_markdown_filename_pattern",
+            fallback="{playlist_name}_{playlist_id}_{date}.md",
+        )
+
+    @staticmethod
+    def get_playlist_markdown_filename(
+        playlist_name: str,
+        playlist_id: str,
+        date_str: str | None = None,
+        filename_pattern: str | None = None,
+    ) -> str:
+        if date_str is None:
+            date_str = str(datetime.date.today())
+        if filename_pattern is None:
+            filename_pattern = "{playlist_name}_{playlist_id}_{date}.md"
+
+        sanitized_name = SpotifyToFile.sanitize_playlist_name(playlist_name)
+        if not sanitized_name:
+            sanitized_name = "untitled_playlist"
+        return filename_pattern.format(
+            playlist_name=sanitized_name,
+            playlist_id=playlist_id,
+            date=date_str,
+            extension=".md",
+        )
+
+    def build_playlist_markdown_filename(
+        self, playlist_name: str, playlist_id: str
+    ) -> str:
+        return self.get_playlist_markdown_filename(
+            playlist_name,
+            playlist_id,
+            str(datetime.date.today()),
+            self.playlist_markdown_filename_pattern,
+        )
 
     def save_unique_tracks_in_playlists(self, unique_tracks_in_playlists: dict):
         csv_file_name = (
@@ -564,14 +602,18 @@ class SpotifyToFile(SpotifySave):
             playlist_name = playlist["name"]
             logger.debug(f"Playlist name is {playlist_name}")
             playlist_id = playlist["id"]
+            sanitized_name = self.sanitize_playlist_name(playlist_name)
 
             indiv_playlist_filename = (
-                self.sanitize_playlist_name(playlist_name)
+                sanitized_name
                 + "_"
                 + playlist_id
                 + "_"
                 + str(datetime.date.today())
                 + CSV
+            )
+            markdown_filename = self.build_playlist_markdown_filename(
+                playlist_name, playlist_id
             )
             with open(
                 indiv_playlist_filename, "w", encoding="utf-8", newline="\n"
@@ -621,7 +663,69 @@ class SpotifyToFile(SpotifySave):
                             track_1["duration_min"],
                         ]
                     )
+            self.write_playlist_markdown(markdown_filename, playlist_name, tracks)
             logger.debug("Wrote file: " + str(indiv_playlist_filename))
+            logger.debug("Wrote file: " + str(markdown_filename))
+
+    @staticmethod
+    def write_playlist_markdown(
+        markdown_filename: str, playlist_name: str, tracks: list
+    ):
+        lines = [f"# {playlist_name}", ""]
+        for track in tracks:
+            if track is None:
+                continue
+            artists = ", ".join(artist["name"] for artist in track.get("artists", []))
+            track_name = track.get("name", "")
+            album = track.get("album", {}) or {}
+            release_year = calc_release_year(
+                album.get("release_date"), album.get("release_date_precision")
+            )
+            if release_year in (None, "", -1):
+                year_suffix = ""
+            else:
+                year_suffix = f" ({release_year})"
+            duration = SpotifyToFile.get_duration_in_min(track.get("duration_ms", 0))
+            line = f"- {artists} - {track_name}{year_suffix} [{duration}]"
+            if not artists:
+                line = f"- {track_name}{year_suffix} [{duration}]"
+            lines.append(line)
+
+        with open(markdown_filename, "w", encoding="utf-8") as f:
+            f.write("\n".join(lines) + "\n")
+
+    @staticmethod
+    def convert_existing_playlist_csvs_to_markdown(directory: str):
+        for filename in os.listdir(directory):
+            if not filename.endswith(CSV):
+                continue
+
+            csv_path = os.path.join(directory, filename)
+            markdown_path = os.path.splitext(csv_path)[0] + ".md"
+            with open(csv_path, "r", encoding="utf-8-sig", newline="") as f:
+                rows = list(csv.DictReader(f))
+
+            playlist_name = next(
+                (row.get("Playlist", "") for row in rows if row.get("Playlist")),
+                re.sub(r"_[^_]+_\d{4}-\d{2}-\d{2}$", "", os.path.splitext(filename)[0]),
+            )
+            lines = [f"# {playlist_name}", ""]
+            for row in rows:
+                artist = row.get("Artist", "")
+                track_name = row.get("Track", "")
+                release_year = row.get("Release_Year", "")
+                if release_year and str(release_year)[:4].isdigit():
+                    release_year = str(release_year)[:4]
+                else:
+                    release_year = ""
+                year_suffix = f" ({release_year})" if release_year else ""
+                duration = row.get("Track_Length_min", "")
+                artist_track = f"{artist} - " if artist else ""
+                lines.append(f"- {artist_track}{track_name}{year_suffix} [{duration}]")
+
+            with open(markdown_path, "w", encoding="utf-8") as f:
+                f.write("\n".join(lines) + "\n")
+            logger.info(f"Wrote markdown from existing playlist CSV: {markdown_path}")
 
     @staticmethod
     def sanitize_playlist_name(playlist_name: str) -> str:
@@ -657,16 +761,31 @@ class SpotifyToFile(SpotifySave):
         #     unzip_data_from_zip(f"{zip_folder}/playlists.gz"),
         #     unzip_data_from_zip(f"{zip_folder}/playlist_tracks.gz"),
         # )
-        self.save_playlist_details(
-            unzip_data_from_zip(f"{zip_folder}/playlists.gz"),
+        playlists = unzip_data_from_zip(f"{zip_folder}/playlists.gz")
+        playlist_tracks_path = next(
+            (
+                path
+                for path in (
+                    f"{zip_folder}/playlist_tracks.gz",
+                    f"{zip_folder}/{PLAYLIST_TRACKS}.gz",
+                )
+                if os.path.isfile(path)
+            ),
             None,
-            # unzip_data_from_zip(f"{zip_folder}/playlist_tracks.gz"),
         )
-        # self.save_individual_playlists(
-        #     unzip_data_from_zip(f"{zip_folder}/playlists.gz"),
-        #     None
-        #     unzip_data_from_zip(f"{zip_folder}/playlist_tracks.gz"),
-        # )
+        if playlist_tracks_path is not None:
+            playlist_tracks = unzip_data_from_zip(playlist_tracks_path)
+            self.save_playlist_details(playlists, playlist_tracks)
+            self.save_individual_playlists(playlists, playlist_tracks)
+        else:
+            logger.warning(
+                "Playlist track archive is missing; converting existing individual "
+                "playlist CSV exports to markdown instead."
+            )
+            self.save_playlist_details(playlists, {})
+            self.convert_existing_playlist_csvs_to_markdown(
+                self.individual_playlist_location
+            )
         # self.save_unique_tracks_in_playlists(
         #     unzip_data_from_zip(f"{zip_folder}/unique_playlist_tracks.gz")
         # )
@@ -676,12 +795,23 @@ class SpotifyToFile(SpotifySave):
 
 
 def calc_release_year(release_date, release_date_precision) -> int:
-    if release_date_precision == ["year", "month", "day"]:
-        return release_date[0:4]
+    if release_date is None:
+        return -1
+
+    if isinstance(release_date, str):
+        if len(release_date) >= 4 and release_date[:4].isdigit():
+            return int(release_date[:4])
+        return -1
+
     if release_date_precision is None:
         return -1
 
-    return release_date
+    if isinstance(release_date, (list, tuple)) and release_date:
+        first_value = str(release_date[0])
+        if len(first_value) >= 4 and first_value[:4].isdigit():
+            return int(first_value[:4])
+
+    return -1
 
 
 def main():
