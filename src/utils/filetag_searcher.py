@@ -275,7 +275,14 @@ class MediaTagSearcher:
                 if not tag:
                     raise ValueError("Tag name cannot be empty")
                 conditions = []
-                if "*" in tag or "?" in tag:
+                if value is None:
+                    # Unqualified terms match anywhere in a tag name or value.
+                    term = self._to_like_pattern(f"*{tag}*")
+                    conditions.append(
+                        "(tags.tag LIKE ? ESCAPE '!' OR tags.value LIKE ? ESCAPE '!')"
+                    )
+                    parameters.extend((term, term))
+                elif "*" in tag or "?" in tag:
                     conditions.append("tags.tag LIKE ? ESCAPE '!'")
                     parameters.append(self._to_like_pattern(tag))
                 else:
@@ -389,9 +396,9 @@ if __name__ == "__main__":
     with MediaTagSearcher(media_dir) as searcher:
         # for match in searcher.search("character", "superman"):
         #     print(searcher.format_result(match))
-        for match in searcher.search('character:"judge dredd" OR character:batman'):
-            print(searcher.format_result(match))
+        # for match in searcher.search('character:"judge dredd" OR character:batman'):
+        #     print(searcher.format_result(match))
         # for match in searcher.search('character:"judge dredd"'):
         #     print(searcher.format_result(match))
-        for match in searcher.search('character:"judge dredd" OR character:batman'):
+        for match in searcher.search("wizard"):
             print(searcher.format_result(match))

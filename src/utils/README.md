@@ -16,16 +16,19 @@ Unpaired text files are ignored.
 
 ## Supported searches
 
-Use `search(tag, value=None)` for one exact or wildcard search. With one
-argument, `search()` also accepts a quoted `tag:value` term or a full boolean
-expression:
+Use `search(tag, value=None)` for a search. With two arguments, it searches an
+exact or wildcard `tag:value` pair. With one argument and no colon, it searches
+for the word or phrase as a case-insensitive substring anywhere in tag names or
+values. A one-argument query containing `tag:value` or boolean operators is
+parsed as an expression:
 
 ```python
-searcher.search("favorite")                  # standalone tag
+searcher.search("favorite")                  # substring anywhere in the tags
 searcher.search("category", "landscape")     # exact tag:value pair
 searcher.search("category", "land*")         # wildcard value
 searcher.search("favorit?")                  # wildcard tag
-searcher.search('character:"judge dredd"')   # quoted tag value with spaces
+searcher.search("judge dredd")               # phrase anywhere in tag names/values
+searcher.search('character:"judge dredd"')   # explicit tag:value query
 ```
 
 Use `search_query(expression)` for boolean expressions made from standalone
@@ -46,8 +49,9 @@ precedence than `OR`. Parentheses group expressions. Adjacent terms imply
 spaces, as in `description:"mountain lake at sunrise"`.
 
 The `*` wildcard matches zero or more characters; `?` matches exactly one
-character. Wildcards work in tag names and values. Without wildcards, a term
-must match exactly.
+character. In unqualified searches, wildcards match within tag names or values.
+In explicit `tag:value` searches, they match within that field; without
+wildcards, explicit fields must match exactly.
 
 Queries return media paths sorted by path. A `NOT` expression excludes matching
 files from the set of indexed, paired media files.

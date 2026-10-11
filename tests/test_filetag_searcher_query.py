@@ -59,6 +59,27 @@ def test_search_query_handles_tag_values_quotes_and_wildcards(tmp_path):
         ]
 
 
+def test_unqualified_search_matches_substrings_in_tags_and_values(tmp_path):
+    entries = {
+        "judge-dredd.jpg": "character: judge dredd\n",
+        "favorite.jpg": "favorite\n",
+        "bobcat.jpg": "animal: bobcat\n",
+        "other.jpg": "category: landscape\n",
+    }
+    for filename, tags in entries.items():
+        (tmp_path / filename).touch()
+        (tmp_path / f"{filename}.txt").write_text(tags, encoding="utf-8")
+
+    with MediaTagSearcher(tmp_path) as searcher:
+        assert searcher.search("judge dredd") == [tmp_path / "judge-dredd.jpg"]
+        assert searcher.search("charact") == [tmp_path / "judge-dredd.jpg"]
+        assert searcher.search("cat") == [
+            tmp_path / "bobcat.jpg",
+            tmp_path / "other.jpg",
+        ]
+        assert searcher.search("avor") == [tmp_path / "favorite.jpg"]
+
+
 @pytest.mark.parametrize("expression", ["", "cat AND", "(cat OR dog", "cat OR )"])
 def test_search_query_rejects_malformed_expressions(tmp_path, expression):
     with MediaTagSearcher(tmp_path) as searcher:
